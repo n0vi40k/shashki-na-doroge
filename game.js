@@ -308,13 +308,23 @@
 
     getPlayerIdentity() {
       const user = global.Telegram && global.Telegram.WebApp && global.Telegram.WebApp.initDataUnsafe && global.Telegram.WebApp.initDataUnsafe.user;
-      if (user && (user.username || user.first_name)) {
+      if (user && (user.id || user.username)) {
         return {
-          id: `tg_${user.id || 'user'}`,
-          name: user.username ? `@${user.username}` : user.first_name,
+          id: `tg_${user.id || user.username}`,
+          name: user.username ? `@${user.username}` : `ID ${user.id}`,
         };
       }
-      return { id: 'local_player', name: 'Ты (Гонщик)' };
+      let guestId = '';
+      try {
+        guestId = global.localStorage.getItem('shashki_guest_id') || '';
+        if (!guestId) {
+          guestId = String(100000 + Math.floor(Math.random() * 900000));
+          global.localStorage.setItem('shashki_guest_id', guestId);
+        }
+      } catch (_e) {
+        guestId = '000001';
+      }
+      return { id: `guest_${guestId}`, name: `ID ${guestId}` };
     },
 
     loadEntries() {
@@ -366,7 +376,7 @@
       entries.sort((a, b) => b.score - a.score);
       this.saveEntries(entries);
 
-      const bestRecord = idx >= 0 ? entries[idx] : record;
+      const bestRecord = entries.find((item) => item.id === entryId) || record;
       const remotePayload = {
         id: bestRecord.id,
         name: bestRecord.name,
