@@ -5,6 +5,8 @@
 (function (global) {
   'use strict';
 
+  const BGM_FIREBASE_URL = 'https://puntus-bottle-default-rtdb.europe-west1.firebasedatabase.app/shashki_bgm.json';
+
   class SoundEngine {
     constructor() {
       this.ctx = null;
@@ -33,6 +35,19 @@
       this.musicStep = 0;
       this.rattleAccum = 0;
       this.noiseBuffer = null;
+
+      // Background gameplay music track ("DJ Бутылыч — ГАЗЯВА")
+      this.bgmAudio = null;
+      this.bgmBaseVolume = 0.14; // Quiet level so SFX (0.85) & engines remain clear
+      this.bgmFailed = false;
+      this.bgmBlobUrl = null;
+      this._bgmBlobPromise = null;
+      this._bgmSrcAssigned = false;
+
+      // Preload base64 MP3 payload silently so playback starts instantly on game start
+      if (typeof global.fetch === 'function') {
+        this._preloadBgmBlob();
+      }
     }
 
     ensureContext() {
@@ -77,12 +92,132 @@
         this.ctx.resume().catch(() => {});
       }
       this.unlocked = true;
+      this._ensureBgm();
+    }
+
+    _preloadBgmBlob() {
+      if (this.bgmBlobUrl) return Promise.resolve(this.bgmBlobUrl);
+      if (this._bgmBlobPromise) return this._bgmBlobPromise;
+      const loc = global.location;
+      const isLocal = loc && (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1' || loc.protocol === 'file:');
+      if (isLocal) {
+        this.bgmBlobUrl = 'gazyava.mp3';
+        return Promise.resolve('gazyava.mp3');
+      }
+      if (typeof global.fetch !== 'function' || typeof global.atob !== 'function' || typeof Blob === 'undefined' || !global.URL || typeof global.URL.createObjectURL !== 'function') {
+        return Promise.resolve(null);
+      }
+      this._bgmBlobPromise = global.fetch(BGM_FIREBASE_URL)
+        .then((res) => {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then((data) => {
+          const b64 = data && data.b64;
+          if (!b64) throw new Error('Missing b64 payload');
+          const clean = b64.replace(/\s+/g, '');
+          const bin = global.atob(clean);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) {
+            bytes[i] = bin.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: (data && data.mime) || 'audio/mpeg' });
+          this.bgmBlobUrl = global.URL.createObjectURL(blob);
+          return this.bgmBlobUrl;
+        })
+        .catch(() => {
+          return null;
+        });
+      return this._bgmBlobPromise;
+    }
+
+    _ensureBgm() {
+      if (this.bgmAudio || typeof Audio === 'undefined') return this.bgmAudio;
+      try {
+        const audio = new Audio();
+        audio.loop = true;
+        audio.preload = 'auto';
+        audio.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
+        audio.muted = Boolean(this.muted || !this.musicEnabled);
+        audio.addEventListener('error', () => {
+          this.bgmFailed = true;
+        });
+        if (this.bgmBlobUrl) {
+          audio.src = this.bgmBlobUrl;
+          this._bgmSrcAssigned = true;
+        } else {
+          this._preloadBgmBlob().then((url) => {
+            if (!this.bgmAudio) return;
+            const targetUrl = url || 'gazyava.mp3';
+            if (!this._bgmSrcAssigned) {
+              this._bgmSrcAssigned = true;
+              this.bgmAudio.src = targetUrl;
+            }
+            if (!this.muted && this.musicEnabled && this.engineActive && this.bgmAudio.paused) {
+              this.bgmAudio.muted = false;
+              this.bgmAudio.volume = this.bgmBaseVolume;
+              this.bgmAudio.play().catch(() => {});
+            }
+          });
+        }
+        this.bgmAudio = audio;
+      } catch (_e) {
+        this.bgmFailed = true;
+      }
+      return this.bgmAudio;
+    }
+
+    startMusic() {
+      const bgm = this._ensureBgm();
+      if (!bgm || this.bgmFailed) return;
+      bgm.muted = Boolean(this.muted || !this.musicEnabled);
+      bgm.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
+      if (!this._bgmSrcAssigned) {
+        if (this.bgmBlobUrl) {
+          this._bgmSrcAssigned = true;
+          bgm.src = this.bgmBlobUrl;
+        } else {
+          this._preloadBgmBlob().then((url) => {
+            if (!this.bgmAudio || this.bgmFailed) return;
+            const targetUrl = url || 'gazyava.mp3';
+            if (!this._bgmSrcAssigned) {
+              this._bgmSrcAssigned = true;
+              this.bgmAudio.src = targetUrl;
+            }
+            if (!this.muted && this.musicEnabled && this.engineActive && this.bgmAudio.paused) {
+              this.bgmAudio.muted = false;
+              this.bgmAudio.volume = this.bgmBaseVolume;
+              this.bgmAudio.play().catch(() => {});
+            }
+          });
+          return;
+        }
+      }
+      if (!this.muted && this.musicEnabled && bgm.paused) {
+        bgm.play().catch(() => {});
+      }
+    }
+
+    pauseMusic() {
+      if (!this.bgmAudio) return;
+      try {
+        this.bgmAudio.pause();
+      } catch (_e) {}
     }
 
     setMuted(muted) {
       this.muted = Boolean(muted);
       if (this.masterGain && this.ctx) {
         this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 0.72, this.ctx.currentTime, 0.03);
+      }
+      if (this.bgmAudio) {
+        this.bgmAudio.muted = Boolean(this.muted || !this.musicEnabled);
+        this.bgmAudio.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
+      }
+      if (this.muted) {
+        this.pauseMusic();
+      } else if (this.musicEnabled && this.engineActive) {
+        this.startMusic();
       }
       return this.muted;
     }
@@ -97,6 +232,15 @@
       if (this.musicGain && this.ctx) {
         this.musicGain.gain.setTargetAtTime(this.musicEnabled ? 0.16 : 0, this.ctx.currentTime, 0.05);
       }
+      if (this.bgmAudio) {
+        this.bgmAudio.muted = Boolean(this.muted || !this.musicEnabled);
+        this.bgmAudio.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
+      }
+      if (!this.musicEnabled) {
+        this.pauseMusic();
+      } else if (!this.muted && this.engineActive) {
+        this.startMusic();
+      }
       return this.musicEnabled;
     }
 
@@ -106,7 +250,11 @@
 
     startEngine(charId) {
       this.currentCharId = charId || 'waldemaree';
-      if (!this.unlocked || !this.ctx) return;
+      if (!this.unlocked) this.unlock();
+      if (!this.unlocked || !this.ctx) {
+        this.startMusic();
+        return;
+      }
 
       this.stopEngine();
 
@@ -177,9 +325,11 @@
       this.engineOsc2.start(now);
       this.engineLfo.start(now);
       this.engineActive = true;
+      this.startMusic();
     }
 
     stopEngine() {
+      this.pauseMusic();
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
       if (this.engineGain) {
@@ -259,14 +409,19 @@
         this.engineGain.gain.setTargetAtTime(0.11 + norm * 0.05, now, 0.08);
       }
 
-      // Subtle driving synth bassline
+      // Quiet background BGM ("Газява") or procedural fallback if MP3 fails to load
       if (this.musicEnabled && !this.muted) {
-        const bpm = 124 + norm * 16;
-        const stepDur = 60 / bpm / 2;
-        this.musicAccum += dt;
-        if (this.musicAccum >= stepDur) {
-          this.musicAccum -= stepDur;
-          this._playBassStep(this.musicStep++);
+        const bgm = this._ensureBgm();
+        if (bgm && !this.bgmFailed) {
+          if (this._bgmSrcAssigned && bgm.paused) this.startMusic();
+        } else {
+          const bpm = 124 + norm * 16;
+          const stepDur = 60 / bpm / 2;
+          this.musicAccum += dt;
+          if (this.musicAccum >= stepDur) {
+            this.musicAccum -= stepDur;
+            this._playBassStep(this.musicStep++);
+          }
         }
       }
     }
