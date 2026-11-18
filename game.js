@@ -296,17 +296,8 @@
   };
 
   // ==================== FIREBASE-READY LEADERBOARD SERVICE ====================
-  const LEADERBOARD_KEY = 'shashki_doroga_leaderboard_v1';
-  const SEED_LEADERS = [
-    { id: 'npc_1', name: 'BY_5555_Boss', charId: 'petrovich', score: 4820, distanceM: 2940, hardMode: true },
-    { id: 'npc_2', name: 'M54_RustKing', charId: 'zabl', score: 3650, distanceM: 2210, hardMode: true },
-    { id: 'npc_3', name: 'MKAD_Shadow', charId: 'petrovich', score: 3180, distanceM: 2050, hardMode: false },
-    { id: 'npc_4', name: 'SWorks_Cadence', charId: 'waldemaree', score: 2740, distanceM: 1860, hardMode: true },
-    { id: 'npc_5', name: 'Getz046_Pro', charId: 'drs4hop', score: 2310, distanceM: 1620, hardMode: false },
-    { id: 'npc_6', name: 'Zabl_KFC', charId: 'zabl', score: 1890, distanceM: 1340, hardMode: false },
-    { id: 'npc_7', name: 'TinkoffRider', charId: 'waldemaree', score: 1450, distanceM: 1090, hardMode: false },
-    { id: 'npc_8', name: 'NightStream77', charId: 'drs4hop', score: 980, distanceM: 760, hardMode: true },
-  ];
+  const LEADERBOARD_KEY = 'shashki_doroga_leaderboard_v2';
+  const SEED_LEADERS = [];
 
   const LeaderboardService = {
     currentFilter: 'all',
@@ -414,13 +405,12 @@
             const data = await res.json();
             if (data && typeof data === 'object') {
               const me = this.getPlayerIdentity();
-              const remote = Object.values(data).map((item) => ({
+              merged = Object.values(data).map((item) => ({
                 ...item,
                 isMe: String(item.id || '').startsWith(me.id),
               }));
-              if (remote.length > 0) {
-                merged = remote;
-              }
+            } else {
+              merged = [];
             }
           }
         } catch (_e) {}
@@ -1278,30 +1268,41 @@
 
     const art = getIllustratedAssets();
     dom.lbList.innerHTML = '';
-    rows.slice(0, 20).forEach((row, index) => {
-      const rank = index + 1;
-      const ch = getCharById(row.charId);
-      const faceSrc = (art[ch.id] && art[ch.id].faceImg) || '';
-      const rowEl = document.createElement('div');
-      rowEl.className = `lb-row${row.isMe ? ' is-me' : ''}`;
-      const rankCls = rank <= 3 ? ` lb-rank-${rank}` : '';
-      rowEl.innerHTML = `
-        <div class="lb-rank${rankCls}">${rank}</div>
-        <img class="lb-avatar" src="${faceSrc}" alt="${ch.name}" />
-        <div class="lb-info">
-          <div class="lb-name">${row.name}</div>
-          <div class="lb-meta">
-            <span>${ch.vehicleName.split('(')[0].trim()}</span>
-            <span class="lb-mode-tag${row.hardMode ? ' is-hard' : ''}">${row.hardMode ? 'СЛОЖНЫЙ' : 'КЛАССИКА'}</span>
+    if (rows.length === 0) {
+      dom.lbList.innerHTML = `
+        <div class="lb-row">
+          <div class="lb-info">
+            <div class="lb-name">Пока нет рекордов</div>
+            <div class="lb-meta"><span>Заверши заезд, чтобы занять 1-е место!</span></div>
           </div>
         </div>
-        <div class="lb-score-col">
-          <span class="lb-score-val">${Math.floor(row.score || 0)}</span>
-          <span class="lb-dist-val">${Math.floor(row.distanceM || 0)} м</span>
-        </div>
       `;
-      dom.lbList.appendChild(rowEl);
-    });
+    } else {
+      rows.slice(0, 20).forEach((row, index) => {
+        const rank = index + 1;
+        const ch = getCharById(row.charId);
+        const faceSrc = (art[ch.id] && art[ch.id].faceImg) || '';
+        const rowEl = document.createElement('div');
+        rowEl.className = `lb-row${row.isMe ? ' is-me' : ''}`;
+        const rankCls = rank <= 3 ? ` lb-rank-${rank}` : '';
+        rowEl.innerHTML = `
+          <div class="lb-rank${rankCls}">${rank}</div>
+          <img class="lb-avatar" src="${faceSrc}" alt="${ch.name}" />
+          <div class="lb-info">
+            <div class="lb-name">${row.name}</div>
+            <div class="lb-meta">
+              <span>${ch.vehicleName.split('(')[0].trim()}</span>
+              <span class="lb-mode-tag${row.hardMode ? ' is-hard' : ''}">${row.hardMode ? 'СЛОЖНЫЙ' : 'КЛАССИКА'}</span>
+            </div>
+          </div>
+          <div class="lb-score-col">
+            <span class="lb-score-val">${Math.floor(row.score || 0)}</span>
+            <span class="lb-dist-val">${Math.floor(row.distanceM || 0)} м</span>
+          </div>
+        `;
+        dom.lbList.appendChild(rowEl);
+      });
+    }
 
     const me = LeaderboardService.getPlayerIdentity();
     const myBestIdx = rows.findIndex((r) => r.isMe);
