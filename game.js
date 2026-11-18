@@ -296,7 +296,7 @@
   };
 
   // ==================== FIREBASE-READY LEADERBOARD SERVICE ====================
-  const LEADERBOARD_KEY = 'shashki_doroga_leaderboard_v2';
+  const LEADERBOARD_KEY = 'shashki_doroga_leaderboard_v3';
   const SEED_LEADERS = [];
 
   const LeaderboardService = {
@@ -307,11 +307,19 @@
     },
 
     getPlayerIdentity() {
-      const user = global.Telegram && global.Telegram.WebApp && global.Telegram.WebApp.initDataUnsafe && global.Telegram.WebApp.initDataUnsafe.user;
-      if (user && (user.id || user.username)) {
+      const tg = global.Telegram && global.Telegram.WebApp;
+      const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+      const isMockEnv = !tg
+        || String(tg.initData || '').includes('mock_debug_hash_777')
+        || !user
+        || Number(user.id) === 123456789
+        || user.username === 'local_tester'
+        || user.username === 'tg_shashki_pro';
+      if (!isMockEnv && (user.id || user.username)) {
         return {
           id: `tg_${user.id || user.username}`,
           name: user.username ? `@${user.username}` : `ID ${user.id}`,
+          isMock: false,
         };
       }
       let guestId = '';
@@ -324,7 +332,7 @@
       } catch (_e) {
         guestId = '000001';
       }
-      return { id: `guest_${guestId}`, name: `ID ${guestId}` };
+      return { id: `guest_${guestId}`, name: `ID ${guestId}`, isMock: true };
     },
 
     loadEntries() {
@@ -369,6 +377,8 @@
       if (idx >= 0) {
         if (cleanScore > (entries[idx].score || 0)) {
           entries[idx] = { ...entries[idx], ...record };
+        } else {
+          entries[idx].name = me.name;
         }
       } else {
         entries.push(record);
@@ -387,9 +397,9 @@
         updatedAt: bestRecord.updatedAt || Date.now(),
       };
 
-      // Sync best record cleanly to configured Firebase Realtime Database path
+      // Sync best record cleanly to configured Firebase Realtime Database path (skip mock browser sessions)
       const fb = this.getConfig();
-      if (fb && fb.databaseUrl) {
+      if (fb && fb.databaseUrl && !me.isMock) {
         const lbPath = fb.path || 'shashki_leaderboard';
         const url = `${fb.databaseUrl.replace(/\/$/, '')}/${lbPath}/${encodeURIComponent(entryId)}.json`;
         fetch(url, {
@@ -415,13 +425,16 @@
             const data = await res.json();
             if (data && typeof data === 'object') {
               const me = this.getPlayerIdentity();
-              merged = Object.values(data).map((item) => ({
-                ...item,
-                isMe: String(item.id || '').startsWith(me.id),
-              }));
+              merged = Object.values(data)
+                .filter((item) => item && !String(item.id || '').startsWith('tg_123456789') && item.name !== '@tg_shashki_pro')
+                .map((item) => ({
+                  ...item,
+                  isMe: String(item.id || '').startsWith(me.id),
+                }));
             } else {
               merged = [];
             }
+            this.saveEntries(merged);
           }
         } catch (_e) {}
       }
