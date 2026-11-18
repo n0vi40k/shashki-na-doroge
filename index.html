@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>ШАШКИ НА ДОРОГЕ — 2.5D</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="tg-mock.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app-stage" class="app-stage" aria-label="Игровая сцена ШАШКИ НА ДОРОГЕ">
+    <!-- 2.5D Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- In-Game Top HUD -->
+    <header id="hud-top" class="hud-top is-hidden" aria-live="polite">
+      <div class="hud-cam-row">
+        <!-- Live Cabin Cam -->
+        <div class="cabin-cam-group">
+          <div id="cam-driver" class="cam-frame cam-driver">
+            <img id="cam-driver-img" src="" alt="Водитель" />
+            <span class="cam-rec-dot" aria-hidden="true"></span>
+            <span id="cam-driver-name" class="cam-tag">waldemaree</span>
+          </div>
+          <div id="cam-passenger" class="cam-frame cam-passenger is-hidden">
+            <img id="cam-passenger-img" src="" alt="Пассажир" />
+            <span id="cam-passenger-name" class="cam-tag">petrovich</span>
+          </div>
+        </div>
+
+        <!-- Telemetry & Quick Actions -->
+        <div class="hud-telemetry">
+          <div class="hud-stat-pills">
+            <div class="stat-pill stat-coins" title="Монеты за заезд">
+              <span class="coin-badge-icon" aria-hidden="true">₽</span>
+              <span id="hud-coins">0</span>
+            </div>
+            <div class="stat-pill stat-speed" title="Скорость">
+              <span id="hud-speed">105</span>
+              <span class="stat-unit">км/ч</span>
+            </div>
+          </div>
+          <div class="hud-score-row">
+            <span id="hud-score" class="hud-score">0</span>
+            <span id="hud-dist" class="hud-dist">0 м</span>
+          </div>
+        </div>
+
+        <div class="hud-icon-actions">
+          <button id="btn-mute" class="icon-btn" type="button" aria-label="Переключить звук" title="Звук">
+            <span class="svg-icon svg-icon-md" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" fill-opacity="0.22"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            </span>
+          </button>
+          <button id="btn-pause" class="icon-btn" type="button" aria-label="Пауза и гараж" title="Пауза">
+            <span class="svg-icon svg-icon-md" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.5" height="16" rx="1.4"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.4"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Badges Row: Combo, Test Drive, Hard Mode Resource Bar -->
+      <div class="hud-sub-row">
+        <div id="hud-combo" class="combo-badge is-hidden">x2 СУЕТА!</div>
+        <div id="hud-testdrive-badge" class="testdrive-badge is-hidden">ТЕСТ-ДРАЙВ</div>
+
+        <div id="hud-resource-wrap" class="resource-wrap is-hidden">
+          <div class="resource-header">
+            <span id="hud-resource-label" class="resource-label">БЕНЗИН</span>
+            <span id="hud-resource-pct" class="resource-pct">100%</span>
+          </div>
+          <div class="resource-track">
+            <div id="hud-resource-fill" class="resource-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="hud-speech" class="hud-speech is-hidden" role="status">
+        <span id="hud-speech-text">ШАШКА!</span>
+      </div>
+    </header>
+
+    <!-- Edge-Tap Steering Feedback Flashes (tapping left/right half of road steers) -->
+    <div id="edge-tap-left" class="edge-tap-zone edge-tap-left" aria-hidden="true"></div>
+    <div id="edge-tap-right" class="edge-tap-zone edge-tap-right" aria-hidden="true"></div>
+
+    <!-- In-Game Bottom 3-Pedal Ergonomic Cockpit Controls (Edge-tap steers lanes) -->
+    <nav id="hud-controls" class="hud-controls is-hidden" aria-label="Управление">
+      <div class="ctrl-dock">
+        <button id="btn-brake" class="ctrl-btn ctrl-brake" type="button" aria-label="Тормоз">
+          <span class="svg-icon ctrl-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5" fill="currentColor" fill-opacity="0.2"/><path d="M4.5 6.5a10 10 0 0 0 0 11"/><path d="M19.5 6.5a10 10 0 0 1 0 11"/><line x1="12" y1="8.5" x2="12" y2="12.5"/><circle cx="12" cy="15.5" r="0.8" fill="currentColor"/></svg>
+          </span>
+          <span id="brake-status" class="ctrl-sub">ТОРМОЗ</span>
+          <div class="brake-heat-track" aria-hidden="true">
+            <div id="brake-heat-fill" class="brake-heat-fill"></div>
+          </div>
+        </button>
+
+        <button id="btn-beam" class="ctrl-btn ctrl-beam" type="button" aria-label="Дальний свет или звонок">
+          <div class="beam-btn-top">
+            <span id="btn-beam-icon" class="svg-icon ctrl-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6c3.8 0 6 2.5 6 6s-2.2 6-6 6H12V6h2z" fill="currentColor" fill-opacity="0.24"/><line x1="3" y1="8" x2="9" y2="8"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="3" y1="16" x2="9" y2="16"/></svg>
+            </span>
+            <span id="btn-beam-text" class="ctrl-beam-title">ДАЛЬНИЙ</span>
+            <span id="beam-cd-text" class="beam-cd-text">ГОТОВ</span>
+          </div>
+          <div class="beam-cd-track" aria-hidden="true">
+            <div id="beam-cd-fill" class="beam-cd-fill"></div>
+          </div>
+        </button>
+
+        <button id="btn-gas" class="ctrl-btn ctrl-gas" type="button" aria-label="Газ">
+          <span class="svg-icon ctrl-icon-lg" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><polyline points="6 11 12 5 18 11"/><path d="M7 19h10" stroke-opacity="0.55"/></svg>
+          </span>
+          <span class="ctrl-sub">ГАЗ</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Pause Modal -->
+    <section id="pause-overlay" class="modal-overlay is-hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="modal-card">
+        <h2 id="pause-title" class="modal-title">ПАУЗА</h2>
+        <p class="modal-subtitle">Переведи дух перед следующей шашкой</p>
+        <div class="modal-actions">
+          <button id="btn-resume" class="primary-btn" type="button">ПРОДОЛЖИТЬ</button>
+          <button id="btn-pause-garage" class="secondary-btn" type="button">В ГАРАЖ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Start / Garage Overlay -->
+    <section id="garage-overlay" class="garage-overlay" aria-label="Гараж и выбор режима">
+      <div class="garage-header">
+        <div class="garage-brand">
+          <div class="garage-kicker">2.5D HIGHWAY RUNNER</div>
+          <h1 class="garage-title">ШАШКИ НА ДОРОГЕ</h1>
+        </div>
+        <div class="garage-header-right">
+          <button id="btn-leaderboard" class="lb-open-btn" type="button" aria-label="Таблица лидеров" title="Таблица лидеров">
+            <span class="svg-icon svg-icon-sm lb-trophy-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" fill="currentColor" fill-opacity="0.24"/></svg>
+            </span>
+            <span>ЛИДЕРЫ</span>
+          </button>
+          <div class="coin-bank" title="Баланс монет">
+            <span class="coin-badge-icon" aria-hidden="true">₽</span>
+            <span id="garage-coins">0</span>
+          </div>
+          <button id="btn-garage-mute" class="icon-btn icon-btn-sm" type="button" aria-label="Переключить звук" title="Звук">
+            <span class="svg-icon svg-icon-md" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" fill-opacity="0.22"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="mode-section">
+        <div class="mode-pills" role="tablist" aria-label="Режим игры">
+          <button id="mode-classic" class="mode-pill is-active" type="button" role="tab" aria-selected="true">
+            <span class="mode-name">КЛАССИКА</span>
+            <span class="mode-rate">x1.0 <span class="coin-badge-icon coin-badge-xs" aria-hidden="true">₽</span></span>
+          </button>
+          <button id="mode-hard" class="mode-pill" type="button" role="tab" aria-selected="false">
+            <span class="mode-name">СЛОЖНЫЙ РЕЖИМ</span>
+            <span class="mode-rate mode-rate-hot">x1.75 <span class="coin-badge-icon coin-badge-xs" aria-hidden="true">₽</span></span>
+          </button>
+        </div>
+        <p id="mode-desc" class="mode-desc">
+          В сложном режиме: <strong><span class="fuel-pill-tag">АИ-98</span> Бензин</strong> для авто / <strong><span class="svg-icon svg-icon-xs energy-inline-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Энергия</strong> — напитки и батончики для <strong>waldemaree</strong>.
+        </p>
+      </div>
+
+      <!-- Garage Character & Vehicle Cards -->
+      <div id="garage-cards" class="garage-cards" aria-label="Список транспорта и водителей">
+        <!-- Populated dynamically by game.js -->
+      </div>
+
+      <!-- Bottom Launch Dock -->
+      <div class="garage-footer">
+        <div class="garage-controls-hint">
+          <span>Нажатие по краям / A D — полосы</span>
+          <span>Тормоз / Газ — скорость</span>
+          <span>Дальний — согнать</span>
+        </div>
+        <button id="btn-start-run" class="launch-btn" type="button">
+          <span id="btn-start-text">ПОЕХАЛИ!</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Game Over Modal -->
+    <section id="gameover-overlay" class="modal-overlay is-hidden" role="dialog" aria-modal="true" aria-labelledby="gameover-title">
+      <div class="modal-card gameover-card">
+        <div class="gameover-cam">
+          <img id="gameover-face" src="" alt="Водитель" />
+        </div>
+        <div id="gameover-reason" class="gameover-badge">АВАРИЯ!</div>
+        <h2 id="gameover-title" class="modal-title">ЗАЕЗД ОКОНЧЕН</h2>
+        <p id="gameover-quote" class="gameover-quote">«Чуть не хватило зазора!»</p>
+
+        <div class="gameover-stats">
+          <div class="go-stat">
+            <span class="go-stat-label">Дистанция</span>
+            <span id="go-dist" class="go-stat-val">0 м</span>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-label">Очки</span>
+            <span id="go-score" class="go-stat-val">0</span>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-label">Макс. комбо</span>
+            <span id="go-combo" class="go-stat-val">x1</span>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-label">Заработано</span>
+            <span id="go-coins" class="go-stat-val go-stat-gold">+0 <span class="coin-badge-icon coin-badge-xs" aria-hidden="true">₽</span></span>
+          </div>
+        </div>
+
+        <div class="go-best-line">
+          <span class="go-best-label">
+            <span class="svg-icon svg-icon-sm go-trophy-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" fill="currentColor" fill-opacity="0.24"/></svg>
+            </span>
+            Рекорд:
+          </span>
+          <strong id="go-best">0</strong>
+        </div>
+
+        <div id="revive-box" class="revive-box">
+          <div class="revive-head">
+            <span class="svg-icon svg-icon-sm revive-shield-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.22"/></svg>
+            </span>
+            <span id="revive-title" class="revive-title">ВТОРОЙ ШАНС — ПРОДОЛЖИТЬ ЗАЕЗД</span>
+          </div>
+          <div class="revive-actions">
+            <button id="btn-revive-coins" class="revive-btn revive-coins-btn" type="button">
+              <span class="revive-btn-main">150 <span class="coin-badge-icon coin-badge-xs" aria-hidden="true">₽</span></span>
+              <span class="revive-btn-sub">За монеты</span>
+            </button>
+            <button id="btn-revive-stars" class="revive-btn revive-stars-btn" type="button">
+              <span class="revive-btn-main">
+                1
+                <span class="svg-icon svg-icon-xs star-inline-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </span>
+              </span>
+              <span class="revive-btn-sub">Telegram Stars</span>
+            </button>
+          </div>
+        </div>
+
+        <p id="go-testdrive-note" class="go-testdrive-note is-hidden">
+          Режим тест-драйва: монеты и рекорд не сохраняются
+        </p>
+
+        <div class="modal-actions">
+          <button id="btn-retry" class="primary-btn" type="button">ЗАНОВО</button>
+          <button id="btn-to-garage" class="secondary-btn" type="button">В ГАРАЖ</button>
+        </div>
+
+        <button id="btn-go-leaderboard" class="go-lb-btn" type="button">
+          <span class="svg-icon svg-icon-sm lb-trophy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" fill="currentColor" fill-opacity="0.24"/></svg>
+          </span>
+          <span>ТАБЛИЦА ЛИДЕРОВ</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Leaderboard Modal (Firebase-Ready) -->
+    <section id="leaderboard-overlay" class="modal-overlay is-hidden" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
+      <div class="modal-card leaderboard-card">
+        <div class="lb-header">
+          <div class="lb-title-group">
+            <span class="svg-icon svg-icon-md lb-trophy-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" fill="currentColor" fill-opacity="0.24"/></svg>
+            </span>
+            <div>
+              <h2 id="leaderboard-title" class="lb-title">ТАБЛИЦА ЛИДЕРОВ</h2>
+              <div id="lb-sync-status" class="lb-sync-status">Локальный рейтинг • Firebase Ready</div>
+            </div>
+          </div>
+          <button id="btn-close-leaderboard" class="icon-btn icon-btn-sm" type="button" aria-label="Закрыть таблицу лидеров">
+            <span class="svg-icon svg-icon-sm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </span>
+          </button>
+        </div>
+
+        <div class="lb-tabs" role="tablist" aria-label="Фильтр режима">
+          <button id="lb-tab-all" class="lb-tab is-active" data-lb-filter="all" type="button" role="tab" aria-selected="true">ВСЕ</button>
+          <button id="lb-tab-classic" class="lb-tab" data-lb-filter="classic" type="button" role="tab" aria-selected="false">КЛАССИКА</button>
+          <button id="lb-tab-hard" class="lb-tab" data-lb-filter="hard" type="button" role="tab" aria-selected="false">СЛОЖНЫЙ</button>
+        </div>
+
+        <div id="leaderboard-list" class="lb-list" aria-live="polite">
+          <!-- Populated dynamically by game.js -->
+        </div>
+
+        <div id="leaderboard-me" class="lb-me-bar">
+          <!-- Populated dynamically by game.js -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="audio.js"></script>
+  <script src="illustrations.js"></script>
+  <script src="renderer25d.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
