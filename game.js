@@ -12,8 +12,8 @@
     path: 'shashki_leaderboard',
   };
   global.SHASHKI_TELEGRAM_CONFIG = global.SHASHKI_TELEGRAM_CONFIG || {
-    botUsername: 'shashki_doroga_25d_bot',
-    reviveInvoiceUrl: 'https://t.me/$lRcztwzM8EvcGgAAZGCzl1Q-q_k',
+    botUsername: 'shashki_dvor_bot',
+    reviveInvoiceUrl: 'https://t.me/$Atn5E-0t8EswFgAAFVU1iwDiZ4o',
   };
 
   const ILLUSTRATED_ASSETS = {};
