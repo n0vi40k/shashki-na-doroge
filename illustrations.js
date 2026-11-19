@@ -740,128 +740,202 @@
       }
 
     } else if (charId === 'trofim') {
-      // ---------- TROFIM: Blue-grey eyes, furrowed brows, black sporty visor shades on forehead, white tee + dark jacket (refs 11 & 12) ----------
+      // ---------- TROFIM: Royal Azzurro ITALIA zip track jacket, light blue-grey eyes, natural short hair, calm neutral expression ----------
       if (showBody) {
-        // Neck & fine black necklace cord (photo 11)
+        // Neck
         ctx.fillStyle = '#d7a180';
-        rr(ctx, -5.2 * s, 10.5 * s, 10.4 * s, 12 * s, 3.2 * s);
+        rr(ctx, -5.2 * s, 10.5 * s, 10.4 * s, 8 * s, 3 * s);
         ctx.fill();
 
-        // Dark charcoal open puffer jacket shoulders over crisp white t-shirt
-        rr(ctx, -20.5 * s, 16 * s, 41 * s, 26 * s, 8 * s);
-        ctx.fillStyle = '#181c24';
+        // Glossy Azzurro blue track jacket torso
+        rr(ctx, -21 * s, 16 * s, 42 * s, 26 * s, 8.5 * s);
+        const jktGrad = ctx.createLinearGradient(-18 * s, 16 * s, 18 * s, 42 * s);
+        jktGrad.addColorStop(0, '#5187f0');
+        jktGrad.addColorStop(0.55, '#356ad8');
+        jktGrad.addColorStop(1, '#1e449e');
+        ctx.fillStyle = jktGrad;
         ctx.fill();
-        ctx.strokeStyle = '#334155';
+        ctx.strokeStyle = '#6fa0ff';
         ctx.lineWidth = 0.9 * s;
         ctx.stroke();
 
-        // White crew-neck t-shirt front V/core panel
-        ctx.fillStyle = '#f4f6f9';
+        // Subtle light-blue shoulder/sleeve fold highlights
+        ctx.strokeStyle = 'rgba(191, 219, 254, 0.28)';
+        ctx.lineWidth = 1.0 * s;
         ctx.beginPath();
-        ctx.moveTo(-10.5 * s, 16 * s);
-        ctx.lineTo(10.5 * s, 16 * s);
-        ctx.lineTo(8.5 * s, 42 * s);
-        ctx.lineTo(-8.5 * s, 42 * s);
-        ctx.closePath();
-        ctx.fill();
-
-        // Thin black cord necklace
-        ctx.strokeStyle = '#111827';
-        ctx.lineWidth = 1.1 * s;
-        ctx.beginPath();
-        ctx.arc(0, 15.5 * s, 5.8 * s, 0.15, Math.PI - 0.15);
+        ctx.moveTo(-15 * s, 18.5 * s);
+        ctx.quadraticCurveTo(-12.5 * s, 26 * s, -13.5 * s, 37 * s);
+        ctx.moveTo(15 * s, 18.5 * s);
+        ctx.quadraticCurveTo(12.5 * s, 26 * s, 13.5 * s, 37 * s);
         ctx.stroke();
 
-        // Puffed jacket lapels
-        ctx.fillStyle = '#242934';
-        rr(ctx, -18.5 * s, 16 * s, 9 * s, 24 * s, 4 * s);
+        // High zipped-up stand-up funnel collar
+        rr(ctx, -7.8 * s, 12.2 * s, 15.6 * s, 8.2 * s, 3 * s);
+        const colGrad = ctx.createLinearGradient(0, 12.2 * s, 0, 20.4 * s);
+        colGrad.addColorStop(0, '#3b71df');
+        colGrad.addColorStop(1, '#2249a8');
+        ctx.fillStyle = colGrad;
         ctx.fill();
-        rr(ctx, 9.5 * s, 16 * s, 9 * s, 24 * s, 4 * s);
+        ctx.strokeStyle = '#7aa7ff';
+        ctx.lineWidth = 0.85 * s;
+        ctx.stroke();
+
+        // Full-length silver-white center zipper
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.45)';
+        ctx.lineWidth = 1.9 * s;
+        ctx.beginPath();
+        ctx.moveTo(0, 12.4 * s);
+        ctx.lineTo(0, 42 * s);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1.15 * s;
+        ctx.beginPath();
+        ctx.moveTo(0, 12.4 * s);
+        ctx.lineTo(0, 42 * s);
+        ctx.stroke();
+
+        ctx.fillStyle = '#f8fafc';
+        rr(ctx, -0.95 * s, 15.2 * s, 1.9 * s, 2.4 * s, 0.6 * s);
         ctx.fill();
+
+        // Small golden laurel crest + micro tricolore on left chest above ITA
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(-12.5 * s, 20.3 * s, 0.85 * s, 2.1 * s);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-11.65 * s, 20.3 * s, 0.9 * s, 2.1 * s);
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(-10.75 * s, 20.3 * s, 0.85 * s, 2.1 * s);
+
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 0.95 * s;
+        ctx.beginPath();
+        ctx.arc(-11.2 * s, 21.8 * s, 2.3 * s, 0.12 * Math.PI, 0.88 * Math.PI);
+        ctx.stroke();
+
+        // Bold metallic gold varsity lettering: ITA | LIA
+        ctx.save();
+        ctx.scale(0.86, 1.12);
+        ctx.font = `900 ${Math.max(4, 7.6 * s).toFixed(1)}px "Arial Narrow", Impact, sans-serif`;
+        ctx.textBaseline = 'alphabetic';
+        const goldGrad = ctx.createLinearGradient(0, 20.5 * s, 0, 27.5 * s);
+        goldGrad.addColorStop(0, '#fef08a');
+        goldGrad.addColorStop(0.5, '#eab308');
+        goldGrad.addColorStop(1, '#a16207');
+        ctx.fillStyle = goldGrad;
+        ctx.strokeStyle = 'rgba(92, 58, 8, 0.65)';
+        ctx.lineWidth = 0.65 * s;
+
+        ctx.textAlign = 'right';
+        ctx.strokeText('ITA', -2.2 * s, 26.6 * s);
+        ctx.fillText('ITA', -2.2 * s, 26.6 * s);
+
+        ctx.textAlign = 'left';
+        ctx.strokeText('LIA', 2.2 * s, 26.6 * s);
+        ctx.fillText('LIA', 2.2 * s, 26.6 * s);
+        ctx.restore();
       }
 
-      // Ears
-      ctx.fillStyle = '#d59d7a';
+      // Ears with subtle inner fold
+      ctx.fillStyle = '#d79e7c';
       ctx.beginPath();
-      ctx.ellipse(-13.2 * s, 1.5 * s, 2.7 * s, 4.7 * s, 0, 0, Math.PI * 2);
-      ctx.ellipse(13.2 * s, 1.5 * s, 2.7 * s, 4.7 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(-12.8 * s, 1.5 * s, 2.7 * s, 4.7 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(12.8 * s, 1.5 * s, 2.7 * s, 4.7 * s, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = 'rgba(155, 92, 62, 0.35)';
+      ctx.lineWidth = 0.8 * s;
+      ctx.beginPath();
+      ctx.arc(-12.7 * s, 1.6 * s, 1.4 * s, 0.4, Math.PI - 0.4);
+      ctx.arc(12.7 * s, 1.6 * s, 1.4 * s, Math.PI + 0.4, -0.4);
+      ctx.stroke();
 
-      // Structured angular face with clean square jawline
+      // Refined tapered-oval face (matches photo 11 proportions & warmer skin tone)
       const skinGrad = ctx.createRadialGradient(-2 * s, -2 * s, 2 * s, 0, 2 * s, 16 * s);
-      skinGrad.addColorStop(0, '#f4cbb0');
-      skinGrad.addColorStop(0.7, '#dfb08f');
-      skinGrad.addColorStop(1, '#bd8664');
+      skinGrad.addColorStop(0, '#fae0cb');
+      skinGrad.addColorStop(0.68, '#e5b999');
+      skinGrad.addColorStop(1, '#c38c6b');
       ctx.fillStyle = skinGrad;
       ctx.beginPath();
-      ctx.moveTo(-12.6 * s, -7.5 * s);
-      ctx.quadraticCurveTo(-13 * s, 6.5 * s, -6.4 * s, 14.2 * s);
-      ctx.quadraticCurveTo(0, 17 * s, 6.4 * s, 14.2 * s);
-      ctx.quadraticCurveTo(13 * s, 6.5 * s, 12.6 * s, -7.5 * s);
+      ctx.moveTo(-12.2 * s, -7.8 * s);
+      ctx.quadraticCurveTo(-12.6 * s, 6.2 * s, -6.2 * s, 13.8 * s);
+      ctx.quadraticCurveTo(0, 17.2 * s, 6.2 * s, 13.8 * s);
+      ctx.quadraticCurveTo(12.6 * s, 6.2 * s, 12.2 * s, -7.8 * s);
       ctx.closePath();
       ctx.fill();
 
-      // Subtle brow furrow shadow & cheekbones
-      ctx.fillStyle = 'rgba(130, 74, 48, 0.16)';
+      // Soft natural cheekbone warmth
+      ctx.fillStyle = 'rgba(205, 126, 98, 0.08)';
       ctx.beginPath();
-      ctx.ellipse(0, -3.5 * s, 3.2 * s, 1.5 * s, 0, 0, Math.PI * 2);
-      ctx.ellipse(-7.5 * s, 4.5 * s, 2.5 * s, 1.7 * s, 0.35, 0, Math.PI * 2);
-      ctx.ellipse(7.5 * s, 4.5 * s, 2.5 * s, 1.7 * s, -0.35, 0, Math.PI * 2);
+      ctx.ellipse(-7.4 * s, 4.2 * s, 2.8 * s, 1.7 * s, 0.25, 0, Math.PI * 2);
+      ctx.ellipse(7.4 * s, 4.2 * s, 2.8 * s, 1.7 * s, -0.25, 0, Math.PI * 2);
       ctx.fill();
 
-      // Distinct cool blue-grey eyes + firm brows
-      const brow = mood === 'panic' ? -0.22 : 0.16;
-      drawEye(ctx, -5.2 * s, -0.8 * s, 2.15 * s, '#4b6e8a', gazeX, blinkOpen, brow);
-      drawEye(ctx, 5.2 * s, -0.8 * s, 2.15 * s, '#4b6e8a', gazeX, blinkOpen, -brow);
+      // Expressive light blue-grey eyes + neutral eyebrows
+      const brow = mood === 'panic' ? -0.22 : 0.0;
+      drawEye(ctx, -5.0 * s, -0.8 * s, 2.15 * s, '#5b84a8', gazeX, blinkOpen, brow);
+      drawEye(ctx, 5.0 * s, -0.8 * s, 2.15 * s, '#5b84a8', gazeX, blinkOpen, -brow);
 
-      // Straight defined nose
-      ctx.fillStyle = '#c58763';
+      // Clean nose bridge & tip highlight
+      ctx.strokeStyle = 'rgba(255, 240, 226, 0.45)';
+      ctx.lineWidth = 1.0 * s;
       ctx.beginPath();
-      ctx.ellipse(0, 3.3 * s, 2.3 * s, 2.1 * s, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Composed straight serious mouth
-      ctx.strokeStyle = '#7e4738';
-      ctx.lineWidth = 1.45 * s;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(-3.8 * s, 8.6 * s);
-      ctx.quadraticCurveTo(0, 8.2 * s, 3.8 * s, 8.7 * s);
+      ctx.moveTo(0, -1.6 * s);
+      ctx.lineTo(0, 2.8 * s);
       ctx.stroke();
+      ctx.fillStyle = '#c98e6b';
+      ctx.beginPath();
+      ctx.ellipse(0, 3.4 * s, 2.2 * s, 1.9 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
 
-      // Short textured brown hair (photo 11)
-      const hairGrad = ctx.createLinearGradient(0, -19 * s, 0, -6 * s);
-      hairGrad.addColorStop(0, '#463224');
-      hairGrad.addColorStop(1, '#261a12');
+      // Calm neutral, composed expression
+      if (mood === 'panic') {
+        ctx.fillStyle = '#6b2025';
+        ctx.beginPath();
+        ctx.ellipse(0, 9.2 * s, 2.3 * s, 1.9 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = 'rgba(182, 114, 92, 0.28)';
+        ctx.beginPath();
+        ctx.ellipse(0, 9.45 * s, 2.3 * s, 0.9 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#824b3e';
+        ctx.lineWidth = 1.25 * s;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-3.4 * s, 8.6 * s);
+        ctx.quadraticCurveTo(-1.1 * s, 8.3 * s, 0, 8.65 * s);
+        ctx.quadraticCurveTo(1.1 * s, 8.3 * s, 3.4 * s, 8.6 * s);
+        ctx.stroke();
+      }
+
+      // Natural short textured brown hair with feathered brow locks (no glasses on head!)
+      const hairGrad = ctx.createLinearGradient(0, -19.5 * s, 0, -5 * s);
+      hairGrad.addColorStop(0, '#4f3828');
+      hairGrad.addColorStop(0.6, '#38261a');
+      hairGrad.addColorStop(1, '#241810');
       ctx.fillStyle = hairGrad;
       ctx.beginPath();
-      ctx.moveTo(-13.2 * s, -3.5 * s);
-      ctx.quadraticCurveTo(-14.2 * s, -17.8 * s, 0, -18.8 * s);
-      ctx.quadraticCurveTo(14.2 * s, -17.8 * s, 13.2 * s, -3.5 * s);
-      ctx.lineTo(11.4 * s, -8.5 * s);
-      ctx.lineTo(6.5 * s, -9.8 * s);
-      ctx.lineTo(1 * s, -9.2 * s);
-      ctx.lineTo(-4.5 * s, -10 * s);
+      ctx.moveTo(-12.8 * s, -2.8 * s);
+      ctx.quadraticCurveTo(-13.8 * s, -17.6 * s, 0, -19.0 * s);
+      ctx.quadraticCurveTo(13.8 * s, -17.6 * s, 12.8 * s, -2.8 * s);
+      ctx.lineTo(11.4 * s, -7.8 * s);
+      ctx.lineTo(8.5 * s, -8.8 * s);
+      ctx.lineTo(5.6 * s, -7.4 * s);
+      ctx.lineTo(2.4 * s, -9.2 * s);
+      ctx.lineTo(-1.0 * s, -7.6 * s);
+      ctx.lineTo(-4.2 * s, -9.3 * s);
+      ctx.lineTo(-7.6 * s, -7.5 * s);
       ctx.lineTo(-10.8 * s, -8.4 * s);
       ctx.closePath();
       ctx.fill();
 
-      // Sleek black wrap-around sporty shield sunglasses perched on forehead (photo 12)
-      ctx.fillStyle = '#07090d';
-      rr(ctx, -12.6 * s, -13.2 * s, 25.2 * s, 4.6 * s, 1.8 * s);
-      ctx.fill();
-      ctx.fillStyle = '#0f172a';
-      rr(ctx, -11.4 * s, -12.4 * s, 9.8 * s, 3.2 * s, 1.2 * s);
-      ctx.fill();
-      rr(ctx, 1.6 * s, -12.4 * s, 9.8 * s, 3.2 * s, 1.2 * s);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(226, 232, 240, 0.55)';
+      // Subtle hair texture highlight
+      ctx.strokeStyle = 'rgba(130, 96, 70, 0.36)';
       ctx.lineWidth = 0.9 * s;
       ctx.beginPath();
-      ctx.moveTo(-9.5 * s, -12 * s);
-      ctx.lineTo(-4.5 * s, -9.5 * s);
-      ctx.moveTo(3.5 * s, -12 * s);
-      ctx.lineTo(8.5 * s, -9.5 * s);
+      ctx.arc(0, -12.5 * s, 6.5 * s, Math.PI * 1.15, Math.PI * 1.85);
       ctx.stroke();
 
     } else if (charId === 'puntus') {
@@ -1054,8 +1128,15 @@
       ctx.closePath();
       ctx.fill();
 
-      // Deep intense dark eyes
-      const brow = mood === 'panic' ? -0.24 : 0.08;
+      // Subtle natural cheek tone
+      ctx.fillStyle = 'rgba(205, 120, 110, 0.09)';
+      ctx.beginPath();
+      ctx.ellipse(-7.2 * s, 4.4 * s, 2.7 * s, 1.7 * s, 0.25, 0, Math.PI * 2);
+      ctx.ellipse(7.2 * s, 4.4 * s, 2.7 * s, 1.7 * s, -0.25, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Deep intense dark eyes with calm eyebrows
+      const brow = mood === 'panic' ? -0.24 : 0.02;
       drawEye(ctx, -5 * s, -0.5 * s, 2.2 * s, '#1f1612', gazeX, blinkOpen, brow);
       drawEye(ctx, 5 * s, -0.5 * s, 2.2 * s, '#1f1612', gazeX, blinkOpen, -brow);
 
@@ -1068,20 +1149,29 @@
       // Small beauty mark to right of lip (mirrored photo 16)
       ctx.fillStyle = '#6c4738';
       ctx.beginPath();
-      ctx.arc(5.4 * s, 7.6 * s, 0.7 * s, 0, Math.PI * 2);
+      ctx.arc(5.6 * s, 7.4 * s, 0.7 * s, 0, Math.PI * 2);
       ctx.fill();
 
-      // Full composed lips
-      ctx.fillStyle = '#ba6d6e';
-      ctx.beginPath();
-      ctx.ellipse(0, 8.8 * s, 3.8 * s, mood === 'hype' ? 1.8 * s : 1.35 * s, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#7b4344';
-      ctx.lineWidth = 0.85 * s;
-      ctx.beginPath();
-      ctx.moveTo(-3.4 * s, 8.7 * s);
-      ctx.lineTo(3.4 * s, 8.7 * s);
-      ctx.stroke();
+      // Small soft symmetrical smile
+      if (mood === 'panic') {
+        ctx.fillStyle = '#6b2025';
+        ctx.beginPath();
+        ctx.ellipse(0, 9.2 * s, 2.3 * s, 1.9 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = 'rgba(196, 122, 118, 0.28)';
+        ctx.beginPath();
+        ctx.ellipse(0, 9.25 * s, 1.9 * s, 0.85 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#854b47';
+        ctx.lineWidth = 1.25 * s;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-2.7 * s, 8.5 * s);
+        ctx.quadraticCurveTo(0, 9.55 * s, 2.7 * s, 8.5 * s);
+        ctx.stroke();
+      }
 
       // Fluffy voluminous curly dark-brown hair dome + layered curls (photo 16!)
       const curlyGrad = ctx.createRadialGradient(0, -13 * s, 3 * s, 0, -11 * s, 19 * s);

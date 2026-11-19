@@ -1870,6 +1870,19 @@
       return { roofShift, roofW, roofTopY, roofBotY, wsTopY, wsBotY, wsTopW, wsBotW };
     }
 
+    _drawEmptyPassengerSeat(ctx, shell, s, passX) {
+      // Subtle empty LHD passenger backrest & headrest on left side of windshield
+      ctx.fillStyle = '#0e141e';
+      roundedRectPath(ctx, passX - 11 * s, shell.wsBotY - 12 * s, 22 * s, 14 * s, 4 * s);
+      ctx.fill();
+      ctx.fillStyle = '#172030';
+      roundedRectPath(ctx, passX - 6.5 * s, shell.wsTopY + 11 * s, 13 * s, 9 * s, 3 * s);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.10)';
+      ctx.lineWidth = 0.8 * s;
+      ctx.stroke();
+    }
+
     _drawCabinExtras(ctx, shell, s, tilt, driverX, showPetrovichWatch) {
       // Subtle seat headrests behind occupants
       ctx.fillStyle = '#0b1018';
@@ -2198,9 +2211,11 @@
       );
       ctx.clip();
 
-      const drvX = shell.roofShift * 0.55 + 1 * s;
+      const passX = shell.roofShift * 0.55 - w * 0.19;
+      const drvX = shell.roofShift * 0.55 + w * 0.19 + tilt * 1.5 * s;
       const mood = state.hardMode && state.resource < 25 ? 'panic' : 'normal';
-      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'drs4hop', drvX, shell.wsTopY + 18 * s, s * 0.88, {
+      this._drawEmptyPassengerSeat(ctx, shell, s, passX);
+      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'drs4hop', drvX, shell.wsTopY + 17.5 * s, s * 0.84, {
         time: state.time,
         tilt,
         mood,
@@ -2677,9 +2692,11 @@
       );
       ctx.clip();
 
-      const drvX = shell.roofShift * 0.55 + 1 * s;
-      const mood = state.hardMode && state.resource < 25 ? 'panic' : (state.isGassing || state.combo >= 2 ? 'hype' : 'normal');
-      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'trofim', drvX, shell.wsTopY + 17 * s, s * 0.86, {
+      const passX = shell.roofShift * 0.55 - w * 0.19;
+      const drvX = shell.roofShift * 0.55 + w * 0.19 + tilt * 1.5 * s;
+      const mood = state.hardMode && state.resource < 25 ? 'panic' : 'normal';
+      this._drawEmptyPassengerSeat(ctx, shell, s, passX);
+      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'trofim', drvX, shell.wsTopY + 17.5 * s, s * 0.84, {
         time: state.time,
         tilt,
         mood,
@@ -3021,9 +3038,11 @@
       );
       ctx.clip();
 
-      const drvX = shell.roofShift * 0.55 + 1 * s;
-      const mood = state.hardMode && state.resource < 25 ? 'panic' : (state.isGassing || state.combo >= 2 ? 'hype' : 'normal');
-      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'mel', drvX, shell.wsTopY + 17 * s, s * 0.86, {
+      const passX = shell.roofShift * 0.55 - w * 0.19;
+      const drvX = shell.roofShift * 0.55 + w * 0.19 + tilt * 1.5 * s;
+      const mood = state.hardMode && state.resource < 25 ? 'panic' : 'normal';
+      this._drawEmptyPassengerSeat(ctx, shell, s, passX);
+      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'mel', drvX, shell.wsTopY + 17.5 * s, s * 0.84, {
         time: state.time,
         tilt,
         mood,

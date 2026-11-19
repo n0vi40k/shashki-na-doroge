@@ -37,10 +37,10 @@
       this.rattleAccum = 0;
       this.noiseBuffer = null;
 
-      // Background gameplay music tracks ("Газява" default @ 0.14, Pink Floyd for Mel @ 0.28 = 2x louder)
+      // Background gameplay music tracks ("Газява" default @ 0.14, Pink Floyd for Mel @ 0.56 = 4x louder / 2x prior)
       this.bgmAudio = null;
       this.bgmBaseVolume = 0.14;
-      this.bgmMelVolume = 0.28;
+      this.bgmMelVolume = 0.56;
       this.bgmTrackKey = 'default';
       this.bgmFailed = false;
       this.bgmTracks = {

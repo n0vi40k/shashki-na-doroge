@@ -53,8 +53,8 @@
       maxSpeed: 168,
       handling: 13.8,
       drainRate: 4.5,
-      hitboxW: 0.44,
-      hitboxH: 78,
+      hitboxW: 0.36,
+      hitboxH: 66,
       specs: { speed: 0.62, handling: 0.96, endurance: 0.72 },
       quotes: {
         shashka: ['В каденсе!', 'ШАШКА!', 'Узкий зазор — наш профиль!'],
@@ -80,8 +80,8 @@
       maxSpeed: 188,
       handling: 11.8,
       drainRate: 4.3,
-      hitboxW: 0.78,
-      hitboxH: 100,
+      hitboxW: 0.62,
+      hitboxH: 84,
       specs: { speed: 0.74, handling: 0.86, endurance: 0.82 },
       quotes: {
         shashka: ['ШАШКА!', 'Олимпийский манёвр!', 'Чисто прошёл!'],
@@ -107,8 +107,8 @@
       maxSpeed: 214,
       handling: 10.6,
       drainRate: 5.0,
-      hitboxW: 0.82,
-      hitboxH: 106,
+      hitboxW: 0.65,
+      hitboxH: 88,
       specs: { speed: 0.88, handling: 0.76, endurance: 0.68 },
       quotes: {
         shashka: ['ШАШКА!', 'Держись, Петрович!', 'Золотые часы на удачу!'],
@@ -134,8 +134,8 @@
       maxSpeed: 232,
       handling: 9.8,
       drainRate: 5.4,
-      hitboxW: 0.88,
-      hitboxH: 114,
+      hitboxW: 0.70,
+      hitboxH: 94,
       specs: { speed: 0.98, handling: 0.68, endurance: 0.78 },
       quotes: {
         shashka: ['ШАШКА!', 'Крузак держит траекторию!', 'Забл одобряет!'],
@@ -161,8 +161,8 @@
       maxSpeed: 236,
       handling: 12.2,
       drainRate: 5.2,
-      hitboxW: 0.80,
-      hitboxH: 106,
+      hitboxW: 0.64,
+      hitboxH: 88,
       specs: { speed: 0.96, handling: 0.88, endurance: 0.78 },
       quotes: {
         shashka: ['ШАШКА!', 'E30 как по рельсам!', 'Стиль 80-х решает!'],
@@ -188,8 +188,8 @@
       maxSpeed: 224,
       handling: 14.8,
       drainRate: 4.4,
-      hitboxW: 0.40,
-      hitboxH: 76,
+      hitboxW: 0.33,
+      hitboxH: 64,
       specs: { speed: 0.86, handling: 1.0, endurance: 0.84 },
       quotes: {
         shashka: ['ШАШКА!', 'Баланс на одном колесе!', 'Музыка качает!'],
@@ -215,8 +215,8 @@
       maxSpeed: 242,
       handling: 12.0,
       drainRate: 5.3,
-      hitboxW: 0.82,
-      hitboxH: 108,
+      hitboxW: 0.65,
+      hitboxH: 90,
       specs: { speed: 1.0, handling: 0.86, endurance: 0.84 },
       quotes: {
         shashka: ['ШАШКА!', 'Another brick in the traffic!', 'Mazda 6 режет поток!'],
@@ -328,6 +328,8 @@
     btnPause: document.getElementById('btn-pause'),
     edgeTapLeft: document.getElementById('edge-tap-left'),
     edgeTapRight: document.getElementById('edge-tap-right'),
+    btnLeft: document.getElementById('btn-left'),
+    btnRight: document.getElementById('btn-right'),
     btnGas: document.getElementById('btn-gas'),
     btnBrake: document.getElementById('btn-brake'),
     brakeHeatFill: document.getElementById('brake-heat-fill'),
@@ -1322,6 +1324,25 @@
   bindHoldButton(dom.btnGas, () => setGas(true), () => setGas(false));
   bindHoldButton(dom.btnBrake, () => setBrake(true), () => setBrake(false));
 
+  function bindSteerButton(btn, dir) {
+    if (!btn) return;
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      sound.unlock();
+      btn.classList.add('is-pressed');
+      if (state.mode === 'playing') {
+        steerLane(dir);
+        flashEdgeZone(dir);
+      }
+    });
+    const end = () => btn.classList.remove('is-pressed');
+    btn.addEventListener('pointerup', end);
+    btn.addEventListener('pointercancel', end);
+    btn.addEventListener('pointerleave', end);
+  }
+  bindSteerButton(dom.btnLeft, -1);
+  bindSteerButton(dom.btnRight, 1);
+
   // Instant Edge-Tap + Multi-Touch Swipe Steering (Left half -> -1, Right half -> +1)
   function flashEdgeZone(dir) {
     const el = dir < 0 ? dom.edgeTapLeft : dom.edgeTapRight;
@@ -1898,8 +1919,8 @@
       item.y -= stepY;
 
       const itemX = renderer.laneX(item.lane, item.y);
-      const hitW = 36 * playerBounds.scale;
-      const hitH = ch.hitboxH * 0.55;
+      const hitW = 40 * playerBounds.scale;
+      const hitH = Math.max(46, ch.hitboxH * 0.65);
 
       if (Math.abs(item.y - p.y) < hitH && Math.abs(itemX - p.x) < hitW + 20) {
         if (item.type === 'coin') {
@@ -1933,7 +1954,7 @@
     // Update Traffic Cars with ACC Car-Following, Continuous Merge Guard & 2-Pass Pairwise Separation
     const heroScale = renderer.heroScale(p.y);
     const pHalfW = (playerBounds.laneW * ch.hitboxW) * 0.5;
-    const pHalfH = ch.hitboxH * 0.44 * heroScale;
+    const pHalfH = ch.hitboxH * 0.40 * heroScale;
 
     for (let i = 0; i < state.traffic.length; i++) {
       const car = state.traffic[i];
@@ -2063,8 +2084,8 @@
       const car = state.traffic[i];
       const cb = renderer.roadBoundsAtY(car.y);
       const carX = renderer.laneX(car.lanePos, car.y);
-      const cHalfW = (car.kind === 'van' ? 32 : 28) * cb.scale;
-      const cHalfH = trafficBaseHeight(car.kind) * 0.44 * cb.scale;
+      const cHalfW = (car.kind === 'van' ? 28 : 24) * cb.scale;
+      const cHalfH = trafficBaseHeight(car.kind) * 0.39 * cb.scale;
 
       if (state.invulnTimer <= 0 && Math.abs(car.y - p.y) < pHalfH + cHalfH && Math.abs(carX - p.x) < pHalfW + cHalfW) {
         triggerGameOver('crash');
