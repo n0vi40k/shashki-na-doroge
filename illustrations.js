@@ -739,6 +739,368 @@
         drawGoldWatchThumb(ctx, side * 19 * s, 22 * s, s * 0.85, time);
       }
 
+    } else if (charId === 'trofim') {
+      // ---------- TROFIM: Blue-grey eyes, furrowed brows, black sporty visor shades on forehead, white tee + dark jacket (refs 11 & 12) ----------
+      if (showBody) {
+        // Neck & fine black necklace cord (photo 11)
+        ctx.fillStyle = '#d7a180';
+        rr(ctx, -5.2 * s, 10.5 * s, 10.4 * s, 12 * s, 3.2 * s);
+        ctx.fill();
+
+        // Dark charcoal open puffer jacket shoulders over crisp white t-shirt
+        rr(ctx, -20.5 * s, 16 * s, 41 * s, 26 * s, 8 * s);
+        ctx.fillStyle = '#181c24';
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 0.9 * s;
+        ctx.stroke();
+
+        // White crew-neck t-shirt front V/core panel
+        ctx.fillStyle = '#f4f6f9';
+        ctx.beginPath();
+        ctx.moveTo(-10.5 * s, 16 * s);
+        ctx.lineTo(10.5 * s, 16 * s);
+        ctx.lineTo(8.5 * s, 42 * s);
+        ctx.lineTo(-8.5 * s, 42 * s);
+        ctx.closePath();
+        ctx.fill();
+
+        // Thin black cord necklace
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 1.1 * s;
+        ctx.beginPath();
+        ctx.arc(0, 15.5 * s, 5.8 * s, 0.15, Math.PI - 0.15);
+        ctx.stroke();
+
+        // Puffed jacket lapels
+        ctx.fillStyle = '#242934';
+        rr(ctx, -18.5 * s, 16 * s, 9 * s, 24 * s, 4 * s);
+        ctx.fill();
+        rr(ctx, 9.5 * s, 16 * s, 9 * s, 24 * s, 4 * s);
+        ctx.fill();
+      }
+
+      // Ears
+      ctx.fillStyle = '#d59d7a';
+      ctx.beginPath();
+      ctx.ellipse(-13.2 * s, 1.5 * s, 2.7 * s, 4.7 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(13.2 * s, 1.5 * s, 2.7 * s, 4.7 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Structured angular face with clean square jawline
+      const skinGrad = ctx.createRadialGradient(-2 * s, -2 * s, 2 * s, 0, 2 * s, 16 * s);
+      skinGrad.addColorStop(0, '#f4cbb0');
+      skinGrad.addColorStop(0.7, '#dfb08f');
+      skinGrad.addColorStop(1, '#bd8664');
+      ctx.fillStyle = skinGrad;
+      ctx.beginPath();
+      ctx.moveTo(-12.6 * s, -7.5 * s);
+      ctx.quadraticCurveTo(-13 * s, 6.5 * s, -6.4 * s, 14.2 * s);
+      ctx.quadraticCurveTo(0, 17 * s, 6.4 * s, 14.2 * s);
+      ctx.quadraticCurveTo(13 * s, 6.5 * s, 12.6 * s, -7.5 * s);
+      ctx.closePath();
+      ctx.fill();
+
+      // Subtle brow furrow shadow & cheekbones
+      ctx.fillStyle = 'rgba(130, 74, 48, 0.16)';
+      ctx.beginPath();
+      ctx.ellipse(0, -3.5 * s, 3.2 * s, 1.5 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(-7.5 * s, 4.5 * s, 2.5 * s, 1.7 * s, 0.35, 0, Math.PI * 2);
+      ctx.ellipse(7.5 * s, 4.5 * s, 2.5 * s, 1.7 * s, -0.35, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Distinct cool blue-grey eyes + firm brows
+      const brow = mood === 'panic' ? -0.22 : 0.16;
+      drawEye(ctx, -5.2 * s, -0.8 * s, 2.15 * s, '#4b6e8a', gazeX, blinkOpen, brow);
+      drawEye(ctx, 5.2 * s, -0.8 * s, 2.15 * s, '#4b6e8a', gazeX, blinkOpen, -brow);
+
+      // Straight defined nose
+      ctx.fillStyle = '#c58763';
+      ctx.beginPath();
+      ctx.ellipse(0, 3.3 * s, 2.3 * s, 2.1 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Composed straight serious mouth
+      ctx.strokeStyle = '#7e4738';
+      ctx.lineWidth = 1.45 * s;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-3.8 * s, 8.6 * s);
+      ctx.quadraticCurveTo(0, 8.2 * s, 3.8 * s, 8.7 * s);
+      ctx.stroke();
+
+      // Short textured brown hair (photo 11)
+      const hairGrad = ctx.createLinearGradient(0, -19 * s, 0, -6 * s);
+      hairGrad.addColorStop(0, '#463224');
+      hairGrad.addColorStop(1, '#261a12');
+      ctx.fillStyle = hairGrad;
+      ctx.beginPath();
+      ctx.moveTo(-13.2 * s, -3.5 * s);
+      ctx.quadraticCurveTo(-14.2 * s, -17.8 * s, 0, -18.8 * s);
+      ctx.quadraticCurveTo(14.2 * s, -17.8 * s, 13.2 * s, -3.5 * s);
+      ctx.lineTo(11.4 * s, -8.5 * s);
+      ctx.lineTo(6.5 * s, -9.8 * s);
+      ctx.lineTo(1 * s, -9.2 * s);
+      ctx.lineTo(-4.5 * s, -10 * s);
+      ctx.lineTo(-10.8 * s, -8.4 * s);
+      ctx.closePath();
+      ctx.fill();
+
+      // Sleek black wrap-around sporty shield sunglasses perched on forehead (photo 12)
+      ctx.fillStyle = '#07090d';
+      rr(ctx, -12.6 * s, -13.2 * s, 25.2 * s, 4.6 * s, 1.8 * s);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      rr(ctx, -11.4 * s, -12.4 * s, 9.8 * s, 3.2 * s, 1.2 * s);
+      ctx.fill();
+      rr(ctx, 1.6 * s, -12.4 * s, 9.8 * s, 3.2 * s, 1.2 * s);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(226, 232, 240, 0.55)';
+      ctx.lineWidth = 0.9 * s;
+      ctx.beginPath();
+      ctx.moveTo(-9.5 * s, -12 * s);
+      ctx.lineTo(-4.5 * s, -9.5 * s);
+      ctx.moveTo(3.5 * s, -12 * s);
+      ctx.lineTo(8.5 * s, -9.5 * s);
+      ctx.stroke();
+
+    } else if (charId === 'puntus') {
+      // ---------- PUNTUS: Tall lean build, center-parted curtain hair, rectangular glasses, white wired earbuds, navy tee (refs 14 & 15) ----------
+      if (showBody) {
+        // Longer slender neck (reflecting tall stature)
+        ctx.fillStyle = '#deb195';
+        rr(ctx, -4.6 * s, 10 * s, 9.2 * s, 13 * s, 3 * s);
+        ctx.fill();
+
+        // Deep navy blue crew-neck t-shirt
+        rr(ctx, -19.5 * s, 16.8 * s, 39 * s, 26 * s, 8 * s);
+        const teeGrad = ctx.createLinearGradient(-18 * s, 16 * s, 18 * s, 42 * s);
+        teeGrad.addColorStop(0, '#2e457d');
+        teeGrad.addColorStop(1, '#1d2d57');
+        ctx.fillStyle = teeGrad;
+        ctx.fill();
+        ctx.strokeStyle = '#3b589c';
+        ctx.lineWidth = 0.9 * s;
+        ctx.stroke();
+
+        // Collar trim
+        ctx.strokeStyle = '#4769b2';
+        ctx.lineWidth = 1.6 * s;
+        ctx.beginPath();
+        ctx.arc(0, 17 * s, 6.4 * s, 0.12, Math.PI - 0.12);
+        ctx.stroke();
+      }
+
+      // Ears + white wired earbuds tucked in
+      ctx.fillStyle = '#dcb093';
+      ctx.beginPath();
+      ctx.ellipse(-12.2 * s, 1.5 * s, 2.5 * s, 4.5 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(12.2 * s, 1.5 * s, 2.5 * s, 4.5 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Slender elongated oval face with slightly narrower chin (photos 14 & 15)
+      const skinGrad = ctx.createRadialGradient(-1.5 * s, -1 * s, 2 * s, 0, 2 * s, 16 * s);
+      skinGrad.addColorStop(0, '#fae0ce');
+      skinGrad.addColorStop(0.72, '#ecc3ab');
+      skinGrad.addColorStop(1, '#cfa187');
+      ctx.fillStyle = skinGrad;
+      ctx.beginPath();
+      ctx.moveTo(-11.8 * s, -8.5 * s);
+      ctx.quadraticCurveTo(-11.6 * s, 6.8 * s, -5.2 * s, 14.8 * s);
+      ctx.quadraticCurveTo(0, 17.6 * s, 5.2 * s, 14.8 * s);
+      ctx.quadraticCurveTo(11.6 * s, 6.8 * s, 11.8 * s, -8.5 * s);
+      ctx.closePath();
+      ctx.fill();
+
+      // Eyes behind glasses
+      const brow = mood === 'panic' ? -0.25 : 0.04;
+      drawEye(ctx, -4.8 * s, -0.6 * s, 2.0 * s, '#4a3d33', gazeX, blinkOpen, brow);
+      drawEye(ctx, 4.8 * s, -0.6 * s, 2.0 * s, '#4a3d33', gazeX, blinkOpen, -brow);
+
+      // Dark rectangular eyeglasses (signature frames from photos 14 & 15!)
+      ctx.strokeStyle = '#181e2c';
+      ctx.lineWidth = 1.65 * s;
+      ctx.fillStyle = 'rgba(205, 228, 255, 0.14)';
+      rr(ctx, -10.4 * s, -4.2 * s, 9.2 * s, 6.4 * s, 1.4 * s);
+      ctx.fill();
+      ctx.stroke();
+      rr(ctx, 1.2 * s, -4.2 * s, 9.2 * s, 6.4 * s, 1.4 * s);
+      ctx.fill();
+      ctx.stroke();
+      // Nose bridge & temple arms
+      ctx.beginPath();
+      ctx.moveTo(-1.2 * s, -1.6 * s);
+      ctx.lineTo(1.2 * s, -1.6 * s);
+      ctx.moveTo(-10.4 * s, -2 * s);
+      ctx.lineTo(-12.2 * s, -1.4 * s);
+      ctx.moveTo(10.4 * s, -2 * s);
+      ctx.lineTo(12.2 * s, -1.4 * s);
+      ctx.stroke();
+      // Glass specular glare
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.48)';
+      ctx.lineWidth = 0.8 * s;
+      ctx.beginPath();
+      ctx.moveTo(-8.8 * s, -3.1 * s);
+      ctx.lineTo(-6.2 * s, 0.8 * s);
+      ctx.moveTo(2.8 * s, -3.1 * s);
+      ctx.lineTo(5.4 * s, 0.8 * s);
+      ctx.stroke();
+
+      // Slender nose bridge & tip
+      ctx.fillStyle = '#cf9e84';
+      ctx.beginPath();
+      ctx.ellipse(0, 3.6 * s, 2.0 * s, 2.4 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Slightly parted lips (photo 14/15 expression)
+      ctx.fillStyle = '#b9696b';
+      ctx.beginPath();
+      ctx.ellipse(0, 9.2 * s, 3.6 * s, mood === 'hype' ? 2.1 * s : 1.5 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(-2.1 * s, 8.6 * s, 4.2 * s, 0.9 * s);
+
+      // Medium-long chestnut brown center-parted curtain hair flaring outward
+      const hairGrad = ctx.createLinearGradient(0, -21 * s, 0, 8 * s);
+      hairGrad.addColorStop(0, '#6e4e3a');
+      hairGrad.addColorStop(1, '#4a3122');
+      ctx.fillStyle = hairGrad;
+      // Left curtain sweep
+      ctx.beginPath();
+      ctx.moveTo(0, -19.2 * s);
+      ctx.quadraticCurveTo(-13.5 * s, -19 * s, -16.8 * s, 0.5 * s);
+      ctx.quadraticCurveTo(-18.2 * s, 6.2 * s, -13.2 * s, 6.8 * s);
+      ctx.quadraticCurveTo(-10.5 * s, -2 * s, -9.8 * s, -7.5 * s);
+      ctx.quadraticCurveTo(-5 * s, -11.5 * s, 0, -14.8 * s);
+      ctx.closePath();
+      ctx.fill();
+      // Right curtain sweep
+      ctx.beginPath();
+      ctx.moveTo(0, -19.2 * s);
+      ctx.quadraticCurveTo(13.5 * s, -19 * s, 16.8 * s, 0.5 * s);
+      ctx.quadraticCurveTo(18.2 * s, 6.2 * s, 13.2 * s, 6.8 * s);
+      ctx.quadraticCurveTo(10.5 * s, -2 * s, 9.8 * s, -7.5 * s);
+      ctx.quadraticCurveTo(5 * s, -11.5 * s, 0, -14.8 * s);
+      ctx.closePath();
+      ctx.fill();
+
+      // White wired earphones hanging down from ears (photos 14 & 15 signature detail!)
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(-11.4 * s, 2.2 * s, 1.4 * s, 0, Math.PI * 2);
+      ctx.arc(11.4 * s, 2.2 * s, 1.4 * s, 0, Math.PI * 2);
+      ctx.fill();
+      if (showBody) {
+        ctx.strokeStyle = '#f1f5f9';
+        ctx.lineWidth = 1.25 * s;
+        ctx.beginPath();
+        ctx.moveTo(-11.4 * s, 3.2 * s);
+        ctx.quadraticCurveTo(-8.5 * s, 14 * s, -4.5 * s, 29 * s);
+        ctx.moveTo(11.4 * s, 3.2 * s);
+        ctx.quadraticCurveTo(8.5 * s, 14 * s, 4.5 * s, 29 * s);
+        ctx.stroke();
+      }
+
+    } else if (charId === 'mel') {
+      // ---------- MEL: Voluminous curly dark-brown hair, intense dark eyes, beauty mark, charcoal adidas sweatshirt (ref 16) ----------
+      if (showBody) {
+        ctx.fillStyle = '#dfb59a';
+        rr(ctx, -5.2 * s, 10.5 * s, 10.4 * s, 11.5 * s, 3.2 * s);
+        ctx.fill();
+
+        // Dark charcoal-grey crew-neck sweatshirt
+        rr(ctx, -20 * s, 16 * s, 40 * s, 26 * s, 8 * s);
+        const swGrad = ctx.createLinearGradient(-18 * s, 16 * s, 18 * s, 42 * s);
+        swGrad.addColorStop(0, '#3a3e46');
+        swGrad.addColorStop(1, '#23262c');
+        ctx.fillStyle = swGrad;
+        ctx.fill();
+        ctx.strokeStyle = '#4b5563';
+        ctx.lineWidth = 0.9 * s;
+        ctx.stroke();
+
+        // Ribbed sweatshirt collar
+        ctx.strokeStyle = '#1f2329';
+        ctx.lineWidth = 2.0 * s;
+        ctx.beginPath();
+        ctx.arc(0, 16.5 * s, 7.2 * s, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+
+        // Small crisp chest print hint (adidas-style corner print, photo 16)
+        ctx.fillStyle = '#e5e7eb';
+        ctx.font = `800 ${Math.max(3.5, Math.round(3.6 * s))}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('adidas', -7.5 * s, 30 * s);
+      }
+
+      // Ears
+      ctx.fillStyle = '#dbb196';
+      ctx.beginPath();
+      ctx.ellipse(-12.6 * s, 1.5 * s, 2.7 * s, 4.6 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(12.6 * s, 1.5 * s, 2.7 * s, 4.6 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Oval youthfully sculpted face
+      const skinGrad = ctx.createRadialGradient(-2 * s, -1 * s, 2 * s, 0, 2 * s, 16 * s);
+      skinGrad.addColorStop(0, '#f7d8c3');
+      skinGrad.addColorStop(0.72, '#e6b89c');
+      skinGrad.addColorStop(1, '#c59275');
+      ctx.fillStyle = skinGrad;
+      ctx.beginPath();
+      ctx.moveTo(-12.2 * s, -7 * s);
+      ctx.quadraticCurveTo(-12.4 * s, 6.8 * s, -6 * s, 14.2 * s);
+      ctx.quadraticCurveTo(0, 16.8 * s, 6 * s, 14.2 * s);
+      ctx.quadraticCurveTo(12.4 * s, 6.8 * s, 12.2 * s, -7 * s);
+      ctx.closePath();
+      ctx.fill();
+
+      // Deep intense dark eyes
+      const brow = mood === 'panic' ? -0.24 : 0.08;
+      drawEye(ctx, -5 * s, -0.5 * s, 2.2 * s, '#1f1612', gazeX, blinkOpen, brow);
+      drawEye(ctx, 5 * s, -0.5 * s, 2.2 * s, '#1f1612', gazeX, blinkOpen, -brow);
+
+      // Straight defined nose
+      ctx.fillStyle = '#cf977a';
+      ctx.beginPath();
+      ctx.ellipse(0, 3.5 * s, 2.2 * s, 2.2 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Small beauty mark to right of lip (mirrored photo 16)
+      ctx.fillStyle = '#6c4738';
+      ctx.beginPath();
+      ctx.arc(5.4 * s, 7.6 * s, 0.7 * s, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Full composed lips
+      ctx.fillStyle = '#ba6d6e';
+      ctx.beginPath();
+      ctx.ellipse(0, 8.8 * s, 3.8 * s, mood === 'hype' ? 1.8 * s : 1.35 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#7b4344';
+      ctx.lineWidth = 0.85 * s;
+      ctx.beginPath();
+      ctx.moveTo(-3.4 * s, 8.7 * s);
+      ctx.lineTo(3.4 * s, 8.7 * s);
+      ctx.stroke();
+
+      // Fluffy voluminous curly dark-brown hair dome + layered curls (photo 16!)
+      const curlyGrad = ctx.createRadialGradient(0, -13 * s, 3 * s, 0, -11 * s, 19 * s);
+      curlyGrad.addColorStop(0, '#4a3326');
+      curlyGrad.addColorStop(1, '#22160f');
+      ctx.fillStyle = curlyGrad;
+      const curls = [
+        [-12.5, -5.5, 4.6], [-13.4, -10.2, 5.2], [-9.2, -14.8, 5.6],
+        [-3.2, -16.8, 6.0], [3.5, -16.6, 6.0], [9.4, -14.4, 5.6],
+        [13.4, -9.8, 5.2], [12.5, -5.4, 4.6],
+        [-8.5, -9.2, 4.2], [-3.2, -9.8, 4.4], [2.8, -9.8, 4.4], [8.4, -9.0, 4.2],
+      ];
+      ctx.beginPath();
+      curls.forEach(([cxp, cyp, cr]) => {
+        ctx.moveTo((cxp + cr) * s, cyp * s);
+        ctx.arc(cxp * s, cyp * s, cr * s, 0, Math.PI * 2);
+      });
+      ctx.fill();
+
     } else {
       // ---------- PETROVICH: Taller lean build, Caesar micro-bangs, light-grey rower tee (refs/4.jpg) ----------
       if (showBody) {
@@ -877,6 +1239,15 @@
     } else if (charId === 'zabl') {
       bg.addColorStop(0, '#2b2018');
       bg.addColorStop(1, '#0f131a');
+    } else if (charId === 'trofim') {
+      bg.addColorStop(0, '#7f1d1d');
+      bg.addColorStop(1, '#18181b');
+    } else if (charId === 'puntus') {
+      bg.addColorStop(0, '#1e3a8a');
+      bg.addColorStop(1, '#090d16');
+    } else if (charId === 'mel') {
+      bg.addColorStop(0, '#374151');
+      bg.addColorStop(1, '#111827');
     } else {
       bg.addColorStop(0, '#1e293b');
       bg.addColorStop(1, '#090d14');
@@ -891,7 +1262,7 @@
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, w, h);
 
-    const scale = (w / 53) * (charId === 'zabl' ? 0.95 : 1.0);
+    const scale = (w / 53) * (charId === 'zabl' ? 0.95 : charId === 'puntus' ? 0.97 : 1.0);
     const offsetY = charId === 'zabl' ? h * 0.41 : h * 0.37;
     const isThumbsVariant = variant === 'thumbs' || variant === 'kfc_thumbs';
     const isKfcVariant = variant === 'kfc' || variant === 'kfc_thumbs';
@@ -1007,6 +1378,27 @@
       ctx.textAlign = 'center';
       ctx.fillText('S-WORKS', 0, 0);
       ctx.restore();
+    } else if (charId === 'puntus') {
+      // Unicycle Balance Pro fallback showroom preview
+      ctx.save();
+      ctx.translate(w * 0.5, h * 0.54);
+      ctx.fillStyle = '#0d1016';
+      ctx.beginPath();
+      ctx.ellipse(0, h * 0.14, 24, 24, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.14);
+      ctx.lineTo(0, -h * 0.14);
+      ctx.stroke();
+      ctx.fillStyle = '#dc2626';
+      rr(ctx, -15, -h * 0.21, 30, 10, 4);
+      ctx.fill();
+      ctx.restore();
     } else {
       // Drawn 3/4 Front-Side Showroom Angle (front fascia + full side flank + 2 visible wheels + reflections)
       ctx.save();
@@ -1014,6 +1406,8 @@
 
       const isLC = charId === 'petrovich';
       const isE39 = charId === 'zabl';
+      const isE30 = charId === 'trofim';
+      const isMazda6 = charId === 'mel';
       const isGetz = charId === 'drs4hop';
 
       // Helper: Draw a foreshortened 3/4 alloy wheel + tire + brake caliper inside wheel well
@@ -1122,6 +1516,30 @@
         hoodGrad.addColorStop(0, '#364152');
         hoodGrad.addColorStop(0.6, '#1a202b');
         hoodGrad.addColorStop(1, '#0f141c');
+      } else if (isE30) {
+        frontGrad.addColorStop(0, '#f83b3b');
+        frontGrad.addColorStop(0.6, '#dc2626');
+        frontGrad.addColorStop(1, '#991b1b');
+
+        sideGrad.addColorStop(0, '#ef4444');
+        sideGrad.addColorStop(0.55, '#b91c1c');
+        sideGrad.addColorStop(1, '#7f1d1d');
+
+        hoodGrad.addColorStop(0, '#ff5252');
+        hoodGrad.addColorStop(0.6, '#dc2626');
+        hoodGrad.addColorStop(1, '#991b1b');
+      } else if (isMazda6) {
+        frontGrad.addColorStop(0, '#6e7681');
+        frontGrad.addColorStop(0.6, '#4b5058');
+        frontGrad.addColorStop(1, '#2b2f36');
+
+        sideGrad.addColorStop(0, '#5a6069');
+        sideGrad.addColorStop(0.55, '#40454d');
+        sideGrad.addColorStop(1, '#26292f');
+
+        hoodGrad.addColorStop(0, '#7c8490');
+        hoodGrad.addColorStop(0.6, '#525760');
+        hoodGrad.addColorStop(1, '#34383f');
       } else {
         frontGrad.addColorStop(0, '#e2e8f0');
         frontGrad.addColorStop(0.6, '#b8c3d1');
@@ -1140,7 +1558,7 @@
       ctx.fillStyle = sideGrad;
       ctx.beginPath();
       ctx.moveTo(frX - 2, beltFrontY + 2);
-      if (isE39) {
+      if (isE39 || isE30 || isMazda6) {
         // Sedan C-pillar flows into raised trunk deck
         ctx.lineTo(176, beltRearY + 5);
         ctx.lineTo(rrX - 2, beltRearY + 4);
@@ -1198,7 +1616,7 @@
 
       // 2. ROOF & UPPER GREENHOUSE (Windshield + Angled Side Windows)
       // Roof shell
-      ctx.fillStyle = isLC ? '#262f3e' : isE39 ? '#222a36' : '#dfe6ef';
+      ctx.fillStyle = isLC ? '#262f3e' : isE39 ? '#222a36' : isE30 ? '#ef4444' : isMazda6 ? '#5a6069' : '#dfe6ef';
       ctx.beginPath();
       ctx.moveTo(flX + 20, roofFrontLY);
       ctx.lineTo(frX - 6, roofFrontRY);

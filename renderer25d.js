@@ -1624,6 +1624,12 @@
         this._drawCarGetz(ctx, x, y, s, tilt, state);
       } else if (p.charId === 'zabl') {
         this._drawCarE39(ctx, x, y, s, tilt, state);
+      } else if (p.charId === 'trofim') {
+        this._drawCarE30(ctx, x, y, s, tilt, state);
+      } else if (p.charId === 'puntus') {
+        this._drawUnicyclePuntus(ctx, x, y, s, tilt, state);
+      } else if (p.charId === 'mel') {
+        this._drawCarMazda6(ctx, x, y, s, tilt, state);
       } else {
         this._drawCarLC200(ctx, x, y, s, tilt, state);
       }
@@ -1632,8 +1638,9 @@
       if (state.invulnTimer > 0) {
         const flicker = state.invulnTimer < 0.85 ? (Math.floor(state.time * 16) % 2 === 0 ? 0.85 : 0.25) : 0.85;
         const pulse = 1 + 0.04 * Math.sin(state.time * 12);
-        const rx = (p.charId === 'waldemaree' ? 38 : 66) * s * pulse;
-        const ry = (p.charId === 'waldemaree' ? 68 : 88) * s * pulse;
+        const isNarrowRider = p.charId === 'waldemaree' || p.charId === 'puntus';
+        const rx = (isNarrowRider ? 42 : 66) * s * pulse;
+        const ry = (isNarrowRider ? 72 : 88) * s * pulse;
         ctx.save();
         ctx.translate(x, y);
         const sg = ctx.createRadialGradient(0, 0, rx * 0.45, 0, 0, ry * 1.05);
@@ -2614,6 +2621,510 @@
       ctx.restore();
     }
 
+    // ==================== 5. TROFIM (RED BMW E30 M3, PHOTO 13) ====================
+    _drawCarE30(ctx, x, y, s, tilt, state) {
+      const w = 94 * s;
+      const h = 122 * s;
+
+      this._drawHeadlightCones(ctx, x, y, w, h, s, state, {
+        length: 215,
+        spread: 46,
+        color: '255, 240, 200',
+      });
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(tilt * 0.14);
+
+      const shell = this._draw25DCarChassis(ctx, w, h, s, tilt, {
+        light: '#f83b3b',
+        mid: '#dc2626',
+        dark: '#991b1b',
+        roof: '#ef2b2b',
+        skirt: '#991b1b',
+        side: '#b91c1c',
+        border: 'rgba(255, 225, 225, 0.34)',
+      }, { wsBotY: h * 0.14, exhaust: 'dual' });
+
+      // Iconic E30 M3 Rear Trunk Wing Spoiler peeking cleanly at tail edge
+      ctx.fillStyle = '#b91c1c';
+      trapezoidPath(ctx, shell.roofShift * 1.1, -h * 0.48, w * 0.78, shell.roofShift * 1.0, -h * 0.43, w * 0.80, 2 * s);
+      ctx.fill();
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(-w * 0.38 + shell.roofShift, -h * 0.47, w * 0.76, 1.8 * s);
+
+      // Sculpted E30 hood power creases
+      ctx.strokeStyle = 'rgba(255, 200, 200, 0.28)';
+      ctx.lineWidth = 1.2 * s;
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.24, h * 0.16);
+      ctx.lineTo(-w * 0.18, h * 0.28);
+      ctx.moveTo(w * 0.24, h * 0.16);
+      ctx.lineTo(w * 0.18, h * 0.28);
+      ctx.stroke();
+
+      // Panoramic windshield with drawn TROFIM
+      ctx.save();
+      trapezoidPath(
+        ctx,
+        shell.roofShift * 0.9,
+        shell.wsTopY + 1.5 * s,
+        shell.wsTopW - 2 * s,
+        shell.roofShift * 0.45,
+        shell.wsBotY - 1.5 * s,
+        shell.wsBotW - 2 * s,
+        3 * s
+      );
+      ctx.clip();
+
+      const drvX = shell.roofShift * 0.55 + 1 * s;
+      const mood = state.hardMode && state.resource < 25 ? 'panic' : (state.isGassing || state.combo >= 2 ? 'hype' : 'normal');
+      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'trofim', drvX, shell.wsTopY + 17 * s, s * 0.86, {
+        time: state.time,
+        tilt,
+        mood,
+        showBody: true,
+      });
+      this._drawCabinExtras(ctx, shell, s, tilt, drvX, false);
+      ctx.restore();
+
+      this._drawWindshieldReflection(
+        ctx,
+        shell.roofShift * 0.9,
+        shell.wsTopY,
+        shell.wsTopW,
+        shell.roofShift * 0.45,
+        shell.wsBotY,
+        shell.wsBotW,
+        s,
+        state.time
+      );
+      this._drawWipers(ctx, shell, s);
+
+      // Full-width matte black E30 grille housing
+      roundedRectPath(ctx, -w * 0.44, h * 0.285, w * 0.88, 12.5 * s, 3 * s);
+      ctx.fillStyle = '#090c11';
+      ctx.fill();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1 * s;
+      ctx.stroke();
+
+      // Central chrome-bordered tall narrow BMW twin-kidney grilles
+      [-8.5 * s, 1.5 * s].forEach((gx) => {
+        roundedRectPath(ctx, gx, h * 0.292, 7 * s, 11 * s, 2 * s);
+        ctx.fillStyle = '#040609';
+        ctx.fill();
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1.2 * s;
+        ctx.stroke();
+      });
+
+      // Tricolor M3 grille emblem & hood BMW roundel
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-16 * s, h * 0.33, 2.2 * s, 3.2 * s);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(-13.8 * s, h * 0.33, 2.2 * s, 3.2 * s);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(-11.6 * s, h * 0.33, 2.2 * s, 3.2 * s);
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.arc(0, h * 0.265, 3.6 * s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.arc(0, h * 0.265, 2.4 * s, 0, Math.PI * 0.5);
+      ctx.lineTo(0, h * 0.265);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, h * 0.265, 2.4 * s, Math.PI, Math.PI * 1.5);
+      ctx.lineTo(0, h * 0.265);
+      ctx.fill();
+
+      // Quad round E30 halogen headlamps (2 left + 2 right)
+      const lampColor = state.beamTimer > 0 ? '#ffffff' : '#fff7d6';
+      [-w * 0.37, -w * 0.23, w * 0.23, w * 0.37].forEach((lx) => {
+        ctx.fillStyle = lampColor;
+        ctx.beginPath();
+        ctx.arc(lx, h * 0.338, 4.3 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1 * s;
+        ctx.stroke();
+      });
+
+      // Black horizontal E30 bumper rub-strip + amber turn corners + lower fog lamps
+      ctx.fillStyle = '#11151d';
+      ctx.fillRect(-w * 0.45, h * 0.39, w * 0.90, 3.2 * s);
+      ctx.fillStyle = '#f59e0b';
+      roundedRectPath(ctx, -w * 0.42, h * 0.40, 8 * s, 3.5 * s, 1 * s);
+      ctx.fill();
+      roundedRectPath(ctx, w * 0.42 - 8 * s, h * 0.40, 8 * s, 3.5 * s, 1 * s);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef3c7';
+      roundedRectPath(ctx, -w * 0.35, h * 0.44, 9 * s, 4 * s, 1.2 * s);
+      ctx.fill();
+      roundedRectPath(ctx, w * 0.35 - 9 * s, h * 0.44, 9 * s, 4 * s, 1.2 * s);
+      ctx.fill();
+
+      ctx.fillStyle = '#141820';
+      roundedRectPath(ctx, -18 * s, h * 0.43, 36 * s, 6.5 * s, 2 * s);
+      ctx.fill();
+      this._drawPlate(ctx, 0, h * 0.415, 42 * s, 9.5 * s, s, 'E30 M3', 'ru');
+
+      ctx.restore();
+    }
+
+    // ==================== 6. PUNTUS (TALL RIDER + UNICYCLE ARMS BALANCING) ====================
+    _drawUnicyclePuntus(ctx, x, y, s, tilt, state) {
+      const time = state.time || 0;
+      const pedalPhase = state.pedalPhase || 0;
+      const balWave = Math.sin(time * 6.2) * 0.14 + tilt * 0.36;
+      const leanAngle = tilt * 0.28 + Math.sin(time * 6.2) * 0.06;
+
+      // Forward LED headlight cone from crown clip lamp
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      const beamLen = (state.beamTimer > 0 ? 245 : 175) * s;
+      const beamSpread = (state.beamTimer > 0 ? 54 : 32) * s;
+      const grad = ctx.createLinearGradient(x, y + 32 * s, x, y + 32 * s + beamLen);
+      grad.addColorStop(0, state.beamTimer > 0 ? 'rgba(230,250,255,0.65)' : 'rgba(220,245,255,0.38)');
+      grad.addColorStop(1, 'rgba(220,245,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(x - 5 * s, y + 32 * s);
+      ctx.lineTo(x + 5 * s, y + 32 * s);
+      ctx.lineTo(x + beamSpread, y + 32 * s + beamLen);
+      ctx.lineTo(x - beamSpread, y + 32 * s + beamLen);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Ground contact shadow (swaying slightly with balance)
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.54)';
+      ctx.beginPath();
+      ctx.ellipse(x + balWave * 16 * s, y + 26 * s, 26 * s, 44 * s, leanAngle * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(leanAngle);
+
+      // Single centered 2.5D spinning unicycle wheel
+      ctx.save();
+      ctx.translate(0, 42 * s);
+      ctx.rotate(tilt * 0.24);
+      roundedRectPath(ctx, -7 * s, -22 * s, 14 * s, 44 * s, 6.5 * s);
+      ctx.fillStyle = '#0d1016';
+      ctx.fill();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.6 * s;
+      ctx.stroke();
+
+      const spokeSlide = Math.sin(pedalPhase * 2.2) * 13 * s;
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(-5 * s, spokeSlide - 1.5 * s, 10 * s, 3 * s);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(-5.5 * s, -spokeSlide * 0.7 - 1.2 * s, 11 * s, 2.4 * s);
+
+      if ((state.brakeHeat || 0) > 0.1 || state.isBraking || state.brakeOverheated) {
+        const hg = clamp(0.32 + (state.brakeHeat || 0) * 0.65, 0.3, 0.95);
+        const bg = ctx.createRadialGradient(0, 0, 1, 0, 0, 12 * s);
+        bg.addColorStop(0, `rgba(255, 195, 90, ${hg.toFixed(2)})`);
+        bg.addColorStop(0.5, `rgba(255, 68, 28, ${(hg * 0.72).toFixed(2)})`);
+        bg.addColorStop(1, 'rgba(255, 40, 20, 0)');
+        ctx.fillStyle = bg;
+        ctx.beginPath();
+        ctx.arc(0, 0, 12 * s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // Chrome vertical unicycle fork crown + fork blades down to axle
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 3.6 * s;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-9 * s, 42 * s);
+      ctx.lineTo(-9 * s, 18 * s);
+      ctx.lineTo(9 * s, 18 * s);
+      ctx.lineTo(9 * s, 42 * s);
+      ctx.moveTo(0, 18 * s);
+      ctx.lineTo(0, 8 * s);
+      ctx.stroke();
+
+      ctx.fillStyle = state.beamTimer > 0 ? '#ffffff' : '#bae6fd';
+      ctx.beginPath();
+      ctx.arc(0, 21 * s, 3.8 * s, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Red-trimmed unicycle saddle
+      roundedRectPath(ctx, -10 * s, 3 * s, 20 * s, 9 * s, 4 * s);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fill();
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1.2 * s;
+      ctx.stroke();
+
+      // Tall pedaling legs pumping cranks around the central unicycle hub
+      const leftPedalY = Math.sin(pedalPhase) * 10.5 * s;
+      const rightPedalY = Math.sin(pedalPhase + Math.PI) * 10.5 * s;
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2.8 * s;
+      ctx.beginPath();
+      ctx.moveTo(-14 * s, 42 * s + leftPedalY * 0.65);
+      ctx.lineTo(0, 42 * s);
+      ctx.lineTo(14 * s, 42 * s + rightPedalY * 0.65);
+      ctx.stroke();
+
+      [
+        { lx: -13 * s, py: leftPedalY },
+        { lx: 13 * s, py: rightPedalY },
+      ].forEach((leg) => {
+        ctx.fillStyle = '#1e293b';
+        roundedRectPath(ctx, leg.lx - 5.2 * s, 2 * s, 10.4 * s, 28 * s + leg.py * 0.45, 4.2 * s);
+        ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(leg.lx - 6 * s, 36 * s + leg.py * 0.65, 12 * s, 3 * s);
+        ctx.fillStyle = '#f8fafc';
+        roundedRectPath(ctx, leg.lx - 5 * s, 29 * s + leg.py * 0.65, 10 * s, 10 * s, 3.4 * s);
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 0.9 * s;
+        ctx.stroke();
+      });
+
+      // Signature Outstretched Balancing Arms ("держит руки в стороны держа баланс")
+      const swayL = -balWave * 28 * s;
+      const swayR = balWave * 28 * s;
+      const elbowL = -balWave * 13 * s;
+      const elbowR = balWave * 13 * s;
+
+      ctx.strokeStyle = '#263868';
+      ctx.lineWidth = 7.4 * s;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-15 * s, -12 * s);
+      ctx.lineTo(-24 * s, -10 * s + elbowL * 0.6);
+      ctx.moveTo(15 * s, -12 * s);
+      ctx.lineTo(24 * s, -10 * s + elbowR * 0.6);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#ecc3ab';
+      ctx.lineWidth = 5.4 * s;
+      ctx.beginPath();
+      ctx.moveTo(-23 * s, -10 * s + elbowL * 0.6);
+      ctx.lineTo(-32 * s, -8 * s + elbowL);
+      ctx.lineTo(-42 * s, -6 * s + swayL);
+      ctx.moveTo(23 * s, -10 * s + elbowR * 0.6);
+      ctx.lineTo(32 * s, -8 * s + elbowR);
+      ctx.lineTo(42 * s, -6 * s + swayR);
+      ctx.stroke();
+
+      [
+        { hx: -43 * s, hy: -6 * s + swayL, side: -1 },
+        { hx: 43 * s, hy: -6 * s + swayR, side: 1 },
+      ].forEach((hnd) => {
+        ctx.fillStyle = '#f2cbb4';
+        ctx.beginPath();
+        ctx.ellipse(hnd.hx, hnd.hy, 4.2 * s, 3.2 * s, hnd.side * 0.25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#c48f74';
+        ctx.lineWidth = 0.8 * s;
+        ctx.stroke();
+
+        ctx.strokeStyle = `rgba(125, 211, 252, ${0.35 + 0.25 * Math.abs(Math.sin(time * 6.2))})`;
+        ctx.lineWidth = 1.4 * s;
+        ctx.beginPath();
+        ctx.arc(hnd.hx, hnd.hy, 7.5 * s, hnd.side < 0 ? Math.PI * 0.7 : -Math.PI * 0.3, hnd.side < 0 ? Math.PI * 1.3 : Math.PI * 0.3);
+        ctx.stroke();
+      });
+
+      // Tall navy torso bridge connecting waist up to bust
+      roundedRectPath(ctx, -15 * s, -22 * s, 30 * s, 28 * s, 7 * s);
+      ctx.fillStyle = '#243563';
+      ctx.fill();
+
+      // Drawn Puntus portrait positioned higher ("высокий рост"!)
+      const headBob = Math.abs(Math.sin(pedalPhase)) * 1.8 * s;
+      const puntusMood = state.hardMode && state.resource < 25 ? 'panic' : 'normal';
+      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'puntus', 0, -40 * s + headBob, s * 1.12, {
+        time,
+        tilt: clamp(tilt + balWave * 0.35, -1, 1),
+        mood: puntusMood,
+        showBody: true,
+      });
+
+      if (state.hardMode && state.resource < 30) {
+        for (let i = 0; i < 3; i++) {
+          const dropPhase = (time * 3.2 + i * 0.33) % 1;
+          const dx = (i === 1 ? 1 : -1) * (20 + dropPhase * 12) * s;
+          const dy = -48 * s + dropPhase * 20 * s;
+          ctx.fillStyle = `rgba(0, 212, 255, ${1 - dropPhase})`;
+          ctx.beginPath();
+          ctx.arc(dx, dy, 2.5 * s, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    // ==================== 7. MEL (DARK-GREY MAZDA 6 1220 ET-1, PHOTO 17) ====================
+    _drawCarMazda6(ctx, x, y, s, tilt, state) {
+      const w = 96 * s;
+      const h = 124 * s;
+
+      this._drawHeadlightCones(ctx, x, y, w, h, s, state, {
+        length: 225,
+        spread: 48,
+        color: '235, 245, 255',
+      });
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(tilt * 0.13);
+
+      const shell = this._draw25DCarChassis(ctx, w, h, s, tilt, {
+        light: '#747c87',
+        mid: '#505660',
+        dark: '#2d3138',
+        roof: '#5e6570',
+        skirt: '#262a30',
+        side: '#3d424b',
+        border: 'rgba(226, 232, 240, 0.30)',
+      }, { wsBotY: h * 0.14, exhaust: 'dual' });
+
+      // Signature Mazda 6 sculpted V-hood lines converging toward 5-point grille
+      ctx.strokeStyle = 'rgba(226, 232, 240, 0.28)';
+      ctx.lineWidth = 1.3 * s;
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.30, h * 0.15);
+      ctx.lineTo(-14 * s, h * 0.295);
+      ctx.moveTo(w * 0.30, h * 0.15);
+      ctx.lineTo(14 * s, h * 0.295);
+      ctx.stroke();
+
+      // Panoramic windshield with drawn MEL
+      ctx.save();
+      trapezoidPath(
+        ctx,
+        shell.roofShift * 0.9,
+        shell.wsTopY + 1.5 * s,
+        shell.wsTopW - 2 * s,
+        shell.roofShift * 0.45,
+        shell.wsBotY - 1.5 * s,
+        shell.wsBotW - 2 * s,
+        3 * s
+      );
+      ctx.clip();
+
+      const drvX = shell.roofShift * 0.55 + 1 * s;
+      const mood = state.hardMode && state.resource < 25 ? 'panic' : (state.isGassing || state.combo >= 2 ? 'hype' : 'normal');
+      global.CharacterIllustrator.drawCharacterPortrait(ctx, 'mel', drvX, shell.wsTopY + 17 * s, s * 0.86, {
+        time: state.time,
+        tilt,
+        mood,
+        showBody: true,
+      });
+      this._drawCabinExtras(ctx, shell, s, tilt, drvX, false);
+      ctx.restore();
+
+      this._drawWindshieldReflection(
+        ctx,
+        shell.roofShift * 0.9,
+        shell.wsTopY,
+        shell.wsTopW,
+        shell.roofShift * 0.45,
+        shell.wsBotY,
+        shell.wsBotW,
+        s,
+        state.time
+      );
+      this._drawWipers(ctx, shell, s);
+
+      // Mazda 6 5-point black honeycomb grille + curved bright chrome upper wing bar
+      trapezoidPath(ctx, 0, h * 0.285, 36 * s, 0, h * 0.375, 24 * s, 3 * s);
+      ctx.fillStyle = '#0e1117';
+      ctx.fill();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1 * s;
+      ctx.stroke();
+
+      ctx.fillStyle = '#e2e8f0';
+      trapezoidPath(ctx, 0, h * 0.282, 37 * s, 0, h * 0.308, 32 * s, 1.5 * s);
+      ctx.fill();
+
+      // Winged "M" chrome Mazda oval emblem
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.ellipse(0, h * 0.328, 5.2 * s, 3.8 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 1.2 * s;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-3.4 * s, h * 0.316);
+      ctx.lineTo(0, h * 0.336);
+      ctx.lineTo(3.4 * s, h * 0.316);
+      ctx.stroke();
+
+      // Swept-back dark-housing cat-eye headlights (photo 17!)
+      [-1, 1].forEach((side) => {
+        ctx.save();
+        ctx.scale(side, 1);
+        ctx.beginPath();
+        ctx.moveTo(20 * s, h * 0.305);
+        ctx.lineTo(w * 0.44, h * 0.26);
+        ctx.lineTo(w * 0.42, h * 0.345);
+        ctx.lineTo(22 * s, h * 0.35);
+        ctx.closePath();
+        ctx.fillStyle = '#1b2029';
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1 * s;
+        ctx.stroke();
+
+        ctx.fillStyle = state.beamTimer > 0 ? '#ffffff' : '#e0f2fe';
+        ctx.beginPath();
+        ctx.arc(28 * s, h * 0.326, 3.6 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath();
+        ctx.arc(36 * s, h * 0.31, 2.5 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Lower bumper mesh intake + angled silver-trimmed fog lamps
+      ctx.fillStyle = '#11151d';
+      trapezoidPath(ctx, 0, h * 0.395, 34 * s, 0, h * 0.47, 28 * s, 2.5 * s);
+      ctx.fill();
+
+      [-1, 1].forEach((side) => {
+        ctx.save();
+        ctx.scale(side, 1);
+        roundedRectPath(ctx, w * 0.24, h * 0.405, 16 * s, 7.5 * s, 2.5 * s);
+        ctx.fillStyle = '#141820';
+        ctx.fill();
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1.1 * s;
+        ctx.stroke();
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath();
+        ctx.arc(w * 0.33, h * 0.442, 2.2 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Belarus license plate 1220 ET-1 from Photo 17!
+      this._drawPlate(ctx, 0, h * 0.435, 52 * s, 11 * s, s, '1220 ET-1', 'by');
+
+      ctx.restore();
+    }
+
     _drawParticles(ctx, state) {
       if (!state.particles || state.particles.length === 0) return;
       for (const pt of state.particles) {
@@ -2726,6 +3237,12 @@
         this._drawCarGetz(ctx, w * 0.5, h * 0.46, 0.96, 0, previewState);
       } else if (charId === 'zabl') {
         this._drawCarE39(ctx, w * 0.5, h * 0.45, 0.92, 0, previewState);
+      } else if (charId === 'trofim') {
+        this._drawCarE30(ctx, w * 0.5, h * 0.45, 0.92, 0, previewState);
+      } else if (charId === 'puntus') {
+        this._drawUnicyclePuntus(ctx, w * 0.5, h * 0.45, 0.95, 0, previewState);
+      } else if (charId === 'mel') {
+        this._drawCarMazda6(ctx, w * 0.5, h * 0.45, 0.92, 0, previewState);
       } else {
         this._drawCarLC200(ctx, w * 0.5, h * 0.44, 0.88, 0, previewState);
       }

@@ -6,6 +6,7 @@
   'use strict';
 
   const BGM_FIREBASE_URL = 'https://puntus-bottle-default-rtdb.europe-west1.firebasedatabase.app/shashki_bgm.json';
+  const MEL_BGM_FIREBASE_URL = 'https://puntus-bottle-default-rtdb.europe-west1.firebasedatabase.app/shashki_mel_bgm.json';
 
   class SoundEngine {
     constructor() {
@@ -36,17 +37,38 @@
       this.rattleAccum = 0;
       this.noiseBuffer = null;
 
-      // Background gameplay music track ("DJ Бутылыч — ГАЗЯВА")
+      // Background gameplay music tracks ("Газява" default @ 0.14, Pink Floyd for Mel @ 0.28 = 2x louder)
       this.bgmAudio = null;
-      this.bgmBaseVolume = 0.14; // Quiet level so SFX (0.85) & engines remain clear
+      this.bgmBaseVolume = 0.14;
+      this.bgmMelVolume = 0.28;
+      this.bgmTrackKey = 'default';
       this.bgmFailed = false;
-      this.bgmBlobUrl = null;
-      this._bgmBlobPromise = null;
-      this._bgmSrcAssigned = false;
+      this.bgmTracks = {
+        default: {
+          key: 'default',
+          file: 'gazyava.mp3',
+          fbUrl: BGM_FIREBASE_URL,
+          blobUrl: null,
+          promise: null,
+          audio: null,
+          srcAssigned: false,
+          failed: false,
+        },
+        mel: {
+          key: 'mel',
+          file: 'brick_wall.mp3',
+          fbUrl: MEL_BGM_FIREBASE_URL,
+          blobUrl: null,
+          promise: null,
+          audio: null,
+          srcAssigned: false,
+          failed: false,
+        },
+      };
 
-      // Preload base64 MP3 payload silently so playback starts instantly on game start
+      // Preload default MP3 payload silently so playback starts instantly on game start
       if (typeof global.fetch === 'function') {
-        this._preloadBgmBlob();
+        this._preloadTrackBlob('default');
       }
     }
 
@@ -86,28 +108,45 @@
       return buffer;
     }
 
+    getBgmTargetVolume() {
+      return this.currentCharId === 'mel' ? this.bgmMelVolume : this.bgmBaseVolume;
+    }
+
+    _activeTrackKey() {
+      return this.currentCharId === 'mel' ? 'mel' : 'default';
+    }
+
+    preloadCharacterMusic(charId) {
+      const key = charId === 'mel' ? 'mel' : 'default';
+      return this._preloadTrackBlob(key);
+    }
+
     unlock() {
       if (!this.ensureContext()) return;
       if (this.ctx.state === 'suspended') {
         this.ctx.resume().catch(() => {});
       }
       this.unlocked = true;
-      this._ensureBgm();
+      this._ensureBgm(this._activeTrackKey());
     }
 
-    _preloadBgmBlob() {
-      if (this.bgmBlobUrl) return Promise.resolve(this.bgmBlobUrl);
-      if (this._bgmBlobPromise) return this._bgmBlobPromise;
+    _preloadTrackBlob(trackKey) {
+      const key = trackKey === 'mel' ? 'mel' : 'default';
+      const track = this.bgmTracks[key];
+      if (!track) return Promise.resolve(null);
+      if (track.blobUrl) return Promise.resolve(track.blobUrl);
+      if (track.promise) return track.promise;
+
       const loc = global.location;
       const isLocal = loc && (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1' || loc.protocol === 'file:');
       if (isLocal) {
-        this.bgmBlobUrl = 'gazyava.mp3';
-        return Promise.resolve('gazyava.mp3');
+        track.blobUrl = track.file;
+        return Promise.resolve(track.file);
       }
       if (typeof global.fetch !== 'function' || typeof global.atob !== 'function' || typeof Blob === 'undefined' || !global.URL || typeof global.URL.createObjectURL !== 'function') {
         return Promise.resolve(null);
       }
-      this._bgmBlobPromise = global.fetch(BGM_FIREBASE_URL)
+      track.promise = global.fetch(track.fbUrl)
         .then((res) => {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
@@ -122,72 +161,103 @@
             bytes[i] = bin.charCodeAt(i);
           }
           const blob = new Blob([bytes], { type: (data && data.mime) || 'audio/mpeg' });
-          this.bgmBlobUrl = global.URL.createObjectURL(blob);
-          return this.bgmBlobUrl;
+          track.blobUrl = global.URL.createObjectURL(blob);
+          return track.blobUrl;
         })
         .catch(() => {
           return null;
         });
-      return this._bgmBlobPromise;
+      return track.promise;
     }
 
-    _ensureBgm() {
-      if (this.bgmAudio || typeof Audio === 'undefined') return this.bgmAudio;
+    _preloadBgmBlob() {
+      return this._preloadTrackBlob(this._activeTrackKey());
+    }
+
+    _ensureBgm(trackKey) {
+      const key = trackKey || this._activeTrackKey();
+      const track = this.bgmTracks[key];
+      if (!track || typeof Audio === 'undefined') return null;
+
+      this.bgmTrackKey = key;
+      if (track.audio) {
+        this.bgmAudio = track.audio;
+        this.bgmFailed = track.failed;
+        return track.audio;
+      }
+
       try {
         const audio = new Audio();
         audio.loop = true;
         audio.preload = 'auto';
-        audio.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
+        const targetVol = this.getBgmTargetVolume();
+        audio.volume = (this.muted || !this.musicEnabled) ? 0 : targetVol;
         audio.muted = Boolean(this.muted || !this.musicEnabled);
         audio.addEventListener('error', () => {
-          this.bgmFailed = true;
+          track.failed = true;
+          if (this.bgmTrackKey === key) this.bgmFailed = true;
         });
-        if (this.bgmBlobUrl) {
-          audio.src = this.bgmBlobUrl;
-          this._bgmSrcAssigned = true;
+        track.audio = audio;
+        this.bgmAudio = audio;
+        this.bgmFailed = track.failed;
+
+        if (track.blobUrl) {
+          audio.src = track.blobUrl;
+          track.srcAssigned = true;
         } else {
-          this._preloadBgmBlob().then((url) => {
-            if (!this.bgmAudio) return;
-            const targetUrl = url || 'gazyava.mp3';
-            if (!this._bgmSrcAssigned) {
-              this._bgmSrcAssigned = true;
-              this.bgmAudio.src = targetUrl;
+          this._preloadTrackBlob(key).then((url) => {
+            if (!track.audio) return;
+            const targetUrl = url || track.file;
+            if (!track.srcAssigned) {
+              track.srcAssigned = true;
+              track.audio.src = targetUrl;
             }
-            if (!this.muted && this.musicEnabled && this.engineActive && this.bgmAudio.paused) {
-              this.bgmAudio.muted = false;
-              this.bgmAudio.volume = this.bgmBaseVolume;
-              this.bgmAudio.play().catch(() => {});
+            if (!this.muted && this.musicEnabled && this.engineActive && this._activeTrackKey() === key && track.audio.paused) {
+              track.audio.muted = false;
+              track.audio.volume = this.getBgmTargetVolume();
+              track.audio.play().catch(() => {});
             }
           });
         }
-        this.bgmAudio = audio;
       } catch (_e) {
-        this.bgmFailed = true;
+        track.failed = true;
+        if (this.bgmTrackKey === key) this.bgmFailed = true;
       }
-      return this.bgmAudio;
+      return track.audio;
     }
 
     startMusic() {
-      const bgm = this._ensureBgm();
-      if (!bgm || this.bgmFailed) return;
+      const key = this._activeTrackKey();
+      Object.keys(this.bgmTracks).forEach((k) => {
+        if (k !== key && this.bgmTracks[k].audio) {
+          try { this.bgmTracks[k].audio.pause(); } catch (_e) {}
+        }
+      });
+
+      const bgm = this._ensureBgm(key);
+      const track = this.bgmTracks[key];
+      if (!bgm || !track || track.failed) return;
+
+      const targetVol = this.getBgmTargetVolume();
       bgm.muted = Boolean(this.muted || !this.musicEnabled);
-      bgm.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
-      if (!this._bgmSrcAssigned) {
-        if (this.bgmBlobUrl) {
-          this._bgmSrcAssigned = true;
-          bgm.src = this.bgmBlobUrl;
+      bgm.volume = (this.muted || !this.musicEnabled) ? 0 : targetVol;
+
+      if (!track.srcAssigned) {
+        if (track.blobUrl) {
+          track.srcAssigned = true;
+          bgm.src = track.blobUrl;
         } else {
-          this._preloadBgmBlob().then((url) => {
-            if (!this.bgmAudio || this.bgmFailed) return;
-            const targetUrl = url || 'gazyava.mp3';
-            if (!this._bgmSrcAssigned) {
-              this._bgmSrcAssigned = true;
-              this.bgmAudio.src = targetUrl;
+          this._preloadTrackBlob(key).then((url) => {
+            if (!track.audio || track.failed) return;
+            const targetUrl = url || track.file;
+            if (!track.srcAssigned) {
+              track.srcAssigned = true;
+              track.audio.src = targetUrl;
             }
-            if (!this.muted && this.musicEnabled && this.engineActive && this.bgmAudio.paused) {
-              this.bgmAudio.muted = false;
-              this.bgmAudio.volume = this.bgmBaseVolume;
-              this.bgmAudio.play().catch(() => {});
+            if (!this.muted && this.musicEnabled && this.engineActive && this._activeTrackKey() === key && track.audio.paused) {
+              track.audio.muted = false;
+              track.audio.volume = this.getBgmTargetVolume();
+              track.audio.play().catch(() => {});
             }
           });
           return;
@@ -199,10 +269,12 @@
     }
 
     pauseMusic() {
-      if (!this.bgmAudio) return;
-      try {
-        this.bgmAudio.pause();
-      } catch (_e) {}
+      Object.keys(this.bgmTracks).forEach((k) => {
+        const a = this.bgmTracks[k].audio;
+        if (a) {
+          try { a.pause(); } catch (_e) {}
+        }
+      });
     }
 
     setMuted(muted) {
@@ -210,10 +282,14 @@
       if (this.masterGain && this.ctx) {
         this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 0.72, this.ctx.currentTime, 0.03);
       }
-      if (this.bgmAudio) {
-        this.bgmAudio.muted = Boolean(this.muted || !this.musicEnabled);
-        this.bgmAudio.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
-      }
+      const targetVol = this.getBgmTargetVolume();
+      Object.keys(this.bgmTracks).forEach((k) => {
+        const a = this.bgmTracks[k].audio;
+        if (a) {
+          a.muted = Boolean(this.muted || !this.musicEnabled);
+          a.volume = (this.muted || !this.musicEnabled) ? 0 : targetVol;
+        }
+      });
       if (this.muted) {
         this.pauseMusic();
       } else if (this.musicEnabled && this.engineActive) {
@@ -232,10 +308,14 @@
       if (this.musicGain && this.ctx) {
         this.musicGain.gain.setTargetAtTime(this.musicEnabled ? 0.16 : 0, this.ctx.currentTime, 0.05);
       }
-      if (this.bgmAudio) {
-        this.bgmAudio.muted = Boolean(this.muted || !this.musicEnabled);
-        this.bgmAudio.volume = (this.muted || !this.musicEnabled) ? 0 : this.bgmBaseVolume;
-      }
+      const targetVol = this.getBgmTargetVolume();
+      Object.keys(this.bgmTracks).forEach((k) => {
+        const a = this.bgmTracks[k].audio;
+        if (a) {
+          a.muted = Boolean(this.muted || !this.musicEnabled);
+          a.volume = (this.muted || !this.musicEnabled) ? 0 : targetVol;
+        }
+      });
       if (!this.musicEnabled) {
         this.pauseMusic();
       } else if (!this.muted && this.engineActive) {
@@ -270,12 +350,12 @@
       this.engineLfo = this.ctx.createOscillator();
       this.engineLfoGain = this.ctx.createGain();
 
-      if (this.currentCharId === 'waldemaree') {
-        // Subtle aerodynamic tire/chain hum
+      if (this.currentCharId === 'waldemaree' || this.currentCharId === 'puntus') {
+        // Subtle aerodynamic tire/chain hum (bike / unicycle)
         this.engineOsc1.type = 'triangle';
         this.engineOsc2.type = 'sine';
-        this.engineOsc1.frequency.setValueAtTime(95, now);
-        this.engineOsc2.frequency.setValueAtTime(190, now);
+        this.engineOsc1.frequency.setValueAtTime(this.currentCharId === 'puntus' ? 105 : 95, now);
+        this.engineOsc2.frequency.setValueAtTime(this.currentCharId === 'puntus' ? 210 : 190, now);
         this.engineFilter.type = 'bandpass';
         this.engineFilter.frequency.setValueAtTime(520, now);
         this.engineLfo.frequency.setValueAtTime(6, now);
@@ -302,6 +382,28 @@
         this.engineLfo.frequency.setValueAtTime(22, now);
         this.engineLfoGain.gain.setValueAtTime(16, now);
         this.engineGain.gain.setTargetAtTime(0.11, now, 0.08);
+      } else if (this.currentCharId === 'trofim') {
+        // High-revving BMW E30 M3 crisp inline sporty rasp
+        this.engineOsc1.type = 'sawtooth';
+        this.engineOsc2.type = 'triangle';
+        this.engineOsc1.frequency.setValueAtTime(68, now);
+        this.engineOsc2.frequency.setValueAtTime(136, now);
+        this.engineFilter.frequency.setValueAtTime(640, now);
+        this.engineFilter.Q.setValueAtTime(2.6, now);
+        this.engineLfo.frequency.setValueAtTime(18, now);
+        this.engineLfoGain.gain.setValueAtTime(12, now);
+        this.engineGain.gain.setTargetAtTime(0.10, now, 0.08);
+      } else if (this.currentCharId === 'mel') {
+        // Smooth sporty Mazda 6 twin-cam growl (kept restrained so Mel track pops cleanly)
+        this.engineOsc1.type = 'sawtooth';
+        this.engineOsc2.type = 'triangle';
+        this.engineOsc1.frequency.setValueAtTime(56, now);
+        this.engineOsc2.frequency.setValueAtTime(112, now);
+        this.engineFilter.frequency.setValueAtTime(480, now);
+        this.engineFilter.Q.setValueAtTime(1.9, now);
+        this.engineLfo.frequency.setValueAtTime(12, now);
+        this.engineLfoGain.gain.setValueAtTime(6, now);
+        this.engineGain.gain.setTargetAtTime(0.085, now, 0.08);
       } else {
         // Deep commanding LC200 V8 rumble
         this.engineOsc1.type = 'sawtooth';
@@ -358,13 +460,13 @@
       const now = this.ctx.currentTime;
       const norm = Math.max(0, Math.min(1.3, (speedKmh - 50) / 170));
 
-      if (charId === 'waldemaree') {
-        const freq = 75 + norm * 85;
+      if (charId === 'waldemaree' || charId === 'puntus') {
+        const freq = (charId === 'puntus' ? 84 : 75) + norm * 85;
         this.engineOsc1.frequency.setTargetAtTime(freq, now, 0.06);
         this.engineOsc2.frequency.setTargetAtTime(freq * 2.02, now, 0.06);
         this.engineGain.gain.setTargetAtTime(0.03 + norm * 0.04, now, 0.08);
 
-        // Freehub clicks when coasting/braking; chain tick when pedaling
+        // Freehub clicks when coasting/braking; chain/crank tick when pedaling
         if (isBraking || (!isGassing && norm > 0.25)) {
           const rate = 18 + norm * 24;
           this.freehubAccum += dt * rate;
@@ -400,6 +502,26 @@
             this._playExhaustPop();
           }
         }
+      } else if (charId === 'trofim') {
+        const base = 62 + norm * 98 + (isGassing ? 20 : 0);
+        this.engineOsc1.frequency.setTargetAtTime(base, now, 0.05);
+        this.engineOsc2.frequency.setTargetAtTime(base * 2, now, 0.05);
+        this.engineFilter.frequency.setTargetAtTime(560 + norm * 920, now, 0.06);
+        this.engineGain.gain.setTargetAtTime(0.09 + norm * 0.05, now, 0.08);
+
+        if (isBraking || (isGassing && Math.random() < 0.28)) {
+          this.rattleAccum += dt * 6.5;
+          if (this.rattleAccum >= 1) {
+            this.rattleAccum -= 1;
+            this._playExhaustPop();
+          }
+        }
+      } else if (charId === 'mel') {
+        const base = 50 + norm * 78 + (isGassing ? 15 : 0);
+        this.engineOsc1.frequency.setTargetAtTime(base, now, 0.06);
+        this.engineOsc2.frequency.setTargetAtTime(base * 2, now, 0.06);
+        this.engineFilter.frequency.setTargetAtTime(420 + norm * 660, now, 0.07);
+        this.engineGain.gain.setTargetAtTime(0.075 + norm * 0.04, now, 0.08);
       } else {
         // LC200 V8
         const base = 40 + norm * 56 + (isGassing ? 10 : 0);
@@ -409,11 +531,13 @@
         this.engineGain.gain.setTargetAtTime(0.11 + norm * 0.05, now, 0.08);
       }
 
-      // Quiet background BGM ("Газява") or procedural fallback if MP3 fails to load
+      // Background BGM (track per hero) or procedural fallback if MP3 fails to load
       if (this.musicEnabled && !this.muted) {
-        const bgm = this._ensureBgm();
-        if (bgm && !this.bgmFailed) {
-          if (this._bgmSrcAssigned && bgm.paused) this.startMusic();
+        const key = this._activeTrackKey();
+        const bgm = this._ensureBgm(key);
+        const track = this.bgmTracks[key];
+        if (bgm && track && !track.failed) {
+          if (track.srcAssigned && bgm.paused) this.startMusic();
         } else {
           const bpm = 124 + norm * 16;
           const stepDur = 60 / bpm / 2;

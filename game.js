@@ -20,7 +20,7 @@
   function getIllustratedAssets() {
     if (ILLUSTRATED_ASSETS.ready || !global.CharacterIllustrator) return ILLUSTRATED_ASSETS;
     const CI = global.CharacterIllustrator;
-    ['waldemaree', 'drs4hop', 'zabl', 'petrovich'].forEach((id) => {
+    ['waldemaree', 'drs4hop', 'zabl', 'petrovich', 'trofim', 'puntus', 'mel'].forEach((id) => {
       ILLUSTRATED_ASSETS[id] = {
         cardImg: CI.generateAvatarDataURL(id, 180, 220),
         vehImg: typeof renderer !== 'undefined' && renderer.renderVehicleCardDataURL
@@ -145,6 +145,87 @@
         empty: 'V8 замолчал — закончился бензин!',
       },
     },
+    {
+      id: 'trofim',
+      name: 'Trofim',
+      vehicleName: 'BMW E30 M3 [красная]',
+      vehicleType: 'e30',
+      plate: 'E30 M3',
+      passengerId: null,
+      unlockCoins: 4500,
+      vipStars: 70,
+      resourceType: 'fuel',
+      lore: 'Суровый драйвер на алой BMW E30 M3 с широкими арками, очками на лбу и четырьмя круглыми фарами.',
+      upgradeNames: { engine: 'Движок', tank: 'Бак' },
+      baseSpeed: 146,
+      maxSpeed: 236,
+      handling: 12.2,
+      drainRate: 5.2,
+      hitboxW: 0.80,
+      hitboxH: 106,
+      specs: { speed: 0.96, handling: 0.88, endurance: 0.78 },
+      quotes: {
+        shashka: ['ШАШКА!', 'E30 как по рельсам!', 'Стиль 80-х решает!'],
+        beam: ['Четыре глаза в бой!', 'Уступите красной E30!'],
+        low: ['Спорт-бак пустеет!', 'Заезжаем на АЗС!'],
+        crash: 'Не дай бог помять губу M3…',
+        empty: 'Мотор заглох — кончился бензин!',
+      },
+    },
+    {
+      id: 'puntus',
+      name: 'Puntus',
+      vehicleName: 'Моноцикл Balance Pro',
+      vehicleType: 'unicycle',
+      plate: 'NO PLATE',
+      passengerId: null,
+      unlockCoins: 4500,
+      vipStars: 70,
+      resourceType: 'energy',
+      lore: 'Высокий профи на моноцикле: катит между фурами в наушниках, держа руки в стороны ради идеального баланса.',
+      upgradeNames: { engine: 'Баланс', tank: 'Выносливость' },
+      baseSpeed: 138,
+      maxSpeed: 224,
+      handling: 14.8,
+      drainRate: 4.4,
+      hitboxW: 0.40,
+      hitboxH: 76,
+      specs: { speed: 0.86, handling: 1.0, endurance: 0.84 },
+      quotes: {
+        shashka: ['ШАШКА!', 'Баланс на одном колесе!', 'Музыка качает!'],
+        beam: ['Дзинь-дзинь!', 'Моноцикл летит!'],
+        low: ['Теряю равновесие!', 'Нужен энергетик!'],
+        crash: 'Педаль зацепила асфальт…',
+        empty: 'Силы на нуле — нужен батончик или энергетик!',
+      },
+    },
+    {
+      id: 'mel',
+      name: 'Mel',
+      vehicleName: 'Mazda 6 (1220 ET-1)',
+      vehicleType: 'mazda6',
+      plate: '1220 ET-1',
+      passengerId: null,
+      unlockCoins: 5000,
+      vipStars: 85,
+      resourceType: 'fuel',
+      lore: 'Кудрявый пилот на тёмно-серой Mazda 6 (1220 ET-1) под легендарный саундтрек Pink Floyd на полной громкости.',
+      upgradeNames: { engine: 'Движок', tank: 'Бак' },
+      baseSpeed: 150,
+      maxSpeed: 242,
+      handling: 12.0,
+      drainRate: 5.3,
+      hitboxW: 0.82,
+      hitboxH: 108,
+      specs: { speed: 1.0, handling: 0.86, endurance: 0.84 },
+      quotes: {
+        shashka: ['ШАШКА!', 'Another brick in the traffic!', 'Mazda 6 режет поток!'],
+        beam: ['Ксенон в деле!', 'Дорогу 1220 ET-1!'],
+        low: ['Пора на заправку!', 'Стрелка бака на нуле!'],
+        crash: 'Поцарапал хром решётки…',
+        empty: 'Бак сухой — музыка смолкла!',
+      },
+    },
   ];
 
   const PASSENGERS = {
@@ -188,6 +269,9 @@
         drs4hop: { engine: 1, tank: 1 },
         zabl: { engine: 1, tank: 1 },
         petrovich: { engine: 1, tank: 1 },
+        trofim: { engine: 1, tank: 1 },
+        puntus: { engine: 1, tank: 1 },
+        mel: { engine: 1, tank: 1 },
       },
     };
     try {
@@ -711,6 +795,7 @@
       if (save.unlocked.includes(id)) {
         save.selectedCharId = id;
         persistSave(save);
+        if (sound.preloadCharacterMusic) sound.preloadCharacterMusic(id);
         triggerHaptic('select');
         renderGarage();
       }
@@ -720,6 +805,7 @@
         if (!save.unlocked.includes(id)) save.unlocked.push(id);
         save.selectedCharId = id;
         persistSave(save);
+        if (sound.preloadCharacterMusic) sound.preloadCharacterMusic(id);
         sound.playShashka(2);
         triggerHaptic('notification', 'success');
         renderGarage();
@@ -730,6 +816,7 @@
         setTimeout(renderGarage, 950);
       }
     } else if (action === 'test-drive') {
+      if (sound.preloadCharacterMusic) sound.preloadCharacterMusic(id);
       triggerHaptic('impact', 'medium');
       startRun(id, true);
     } else if (action === 'up-engine' || action === 'up-tank') {
@@ -803,7 +890,7 @@
       dom.camPassenger.classList.add('is-hidden');
     }
 
-    const isBike = ch.vehicleType === 'bike';
+    const isBike = ch.vehicleType === 'bike' || ch.vehicleType === 'unicycle';
     const svgMap = (global.CharacterIllustrator && global.CharacterIllustrator.SVG_ICONS) || {};
     dom.btnBeamIcon.innerHTML = isBike ? (svgMap.bell || '') : (svgMap.beam || '');
     dom.btnBeamText.textContent = isBike ? 'ЗВОНОК' : 'ДАЛЬНИЙ';
@@ -1095,10 +1182,11 @@
     const ch = getCharById(state.activeCharId);
     state.beamTimer = 0.55;
     state.beamCooldown = state.beamMaxCooldown;
-    sound.playBeam(ch.vehicleType === 'bike');
+    const isCycle = ch.vehicleType === 'bike' || ch.vehicleType === 'unicycle';
+    sound.playBeam(isCycle);
     triggerHaptic('impact', 'light');
     showSpeech(pickRandom(ch.quotes.beam), 1.2);
-    spawnPopup(state.player.x, state.player.y + 42, ch.vehicleType === 'bike' ? 'ДЗИНЬ!' : 'ДАЛЬНИЙ!', '#00d4ff', 14);
+    spawnPopup(state.player.x, state.player.y + 42, isCycle ? 'ДЗИНЬ!' : 'ДАЛЬНИЙ!', '#00d4ff', 14);
 
     // Cars ahead in the player's lane yield safely and grant +10 coins per yielding car
     let scaredCount = 0;
@@ -1135,7 +1223,7 @@
   function setGas(pressed) {
     if (!pressed && state.isGassing && state.speedKmh > 135) {
       const ch = getCharById(state.activeCharId);
-      if (ch.vehicleType === 'e39' || ch.vehicleType === 'lc200') {
+      if (ch.vehicleType === 'e39' || ch.vehicleType === 'lc200' || ch.vehicleType === 'e30' || ch.vehicleType === 'mazda6') {
         state.backfireTimer = 0.28;
       }
     }
@@ -1681,7 +1769,7 @@
     p.x = renderer.laneX(p.lanePos, p.y);
 
     // Tire skid marks on sharp lane cuts
-    if (Math.abs(p.tilt) > 0.45 && ch.vehicleType !== 'bike') {
+    if (Math.abs(p.tilt) > 0.45 && ch.vehicleType !== 'bike' && ch.vehicleType !== 'unicycle') {
       const heroScale = renderer.heroScale(p.y);
       state.skidMarks.push({
         x1: p.x - 24 * heroScale,
